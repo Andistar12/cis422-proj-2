@@ -1,0 +1,30 @@
+# Deploys a development server of the app via Docker (and docker-compose)
+#
+# To bring up the development server, run the following
+#
+#   docker-compose up --build
+
+version: '3.4'
+
+services:
+    # The app container
+    web-server:
+        build: 
+            context: .
+            target: dev
+        container_name: cis422_webserver
+        tty: true
+        ports:
+            - 5000:5000
+        environment:
+            - CONFIG_LOC=/run/secrets/config
+        volumes:
+            - .:/app
+            - ./config.json:/run/secrets/config
+    mongodb:
+        container_name: mongo
+        image: mongo:latest
+        ports:
+            - 27017:27017
+        logging:
+            driver: none

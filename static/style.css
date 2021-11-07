@@ -1,0 +1,43 @@
+/* CSS file shared by all HTML files */
+
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.btn-toggle-text div {
+    display: inline;
+}
+
+.btn-toggle-text:not(.collapsed) span {
+    display: none;
+}
+
+.btn-toggle-text.collapsed div {
+    display: none;
+}
+
+.x-btn {
+    display: inline-block;
+    opacity: .5;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.modal-header {
+    background: #007bff;
+}
+
+.close, .modal-title {
+    color: white;
+    background: #007bff;
+}
+
+#warnings-panel {
+    width: 100%;
+    height: 10%;
+    text-align: center;
+}
+
