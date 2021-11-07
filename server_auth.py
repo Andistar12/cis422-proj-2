@@ -13,6 +13,18 @@ blueprint = flask.Blueprint("auth_blueprint", __name__)
 # The Flask login manager
 login_manager = flask_login.LoginManager()
 
+def is_admin():
+    """
+    Returns whether the user is an administrator
+    """
+    return False # TODO
+
+def is_authenticated():
+    """
+    Return whether the user is logged in
+    """
+    return False  # TODO
+
 @login_manager.user_loader
 def user_loader(username):
     """
@@ -41,7 +53,7 @@ def register():
     """
     pass # TODO
 
-@blueprint.route("/login", methods=["GET", "POST"])
+@blueprint.route("/login.html", methods=["GET", "POST"])
 def login():
     """
     GET: Returns the login page login.html

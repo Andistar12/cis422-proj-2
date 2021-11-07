@@ -5,4 +5,4 @@ flask-login==0.5.0
 passlib==1.7.4
 flask-httpauth==4.5.0
 itsdangerous==2.0.1
-pymongo==3.12.1
+pymongo==3.12.0

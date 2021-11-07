@@ -3,6 +3,10 @@
 # To bring up the development server, run the following
 #
 #   docker-compose up --build
+#
+# To bring down the development server, run the following
+#
+#   docker-compose down
 
 version: '3.4'
 

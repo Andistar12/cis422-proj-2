@@ -7,6 +7,7 @@ import logging # Used for logging
 import flask # Used as the backend and for webpage rendering
 import pymongo # Used for MongoDB bindings
 
+# Imports from our own modules
 import server_webpages
 import server_auth
 import server_api
@@ -29,8 +30,8 @@ except KeyError:
 try:
     with open(cfgloc) as cfgfile:
         config = json.load(cfgfile)
-except Exception:
-    logging.getLogger("backend").error("Error occurred opening config file", exc_info=True)
+except:
+    logging.getLogger("server").error("Error occurred opening config file", exc_info=True)
     config = {}
 
 # Fetch config parameters
@@ -39,6 +40,7 @@ app.secret_key = config.get("secret_key", "super secret")
 app.debug = config.get("debug", True)
 app.db_hostname = config.get("db_hostname", "")
 app.db_port = int(config.get("db_port", 27017))
+app.admins = config.get("admins", [])
 
 # Load blueprints to create server endpoints
 app.register_blueprint(server_webpages.blueprint)
@@ -46,8 +48,15 @@ app.register_blueprint(server_auth.blueprint)
 app.register_blueprint(server_api.blueprint)
 
 # Inits the MongoDB connection
-client = pymongo.MongoClient(app.db_hostname, app.db_port)
-app.db = db.AppDB(client)
+try:
+    client = pymongo.MongoClient(app.db_hostname, app.db_port)
+    app.db = db.AppDB(client)
+    for admin in app.admins:
+        app.db.add_admin(admin)
+except:
+    logging.getLogger("")
+    logging.getLogger("server").error("Error occurred setting up database connection", exc_info=True)
+    app.db = None
 
 if __name__ == "__main__":
     # Run app

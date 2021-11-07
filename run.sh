@@ -7,4 +7,4 @@
 #   ./run.sh
 
 export CONFIG_LOC="./config.json"
-python3 backend.py
+python3 server.py

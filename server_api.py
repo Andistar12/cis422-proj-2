@@ -35,7 +35,7 @@ def api_boards():
     pass # TODO
 
 
-@blueprint.route("/api/user_boards")
+@blueprint.route("/api/board/user")
 def api_user_boards():
     """
     Fetches all user subscribed boards.
@@ -58,21 +58,53 @@ def api_user_boards():
     """
     pass # TODO
 
-
-@blueprint.route("/api/board_subscribe", methods=["POST"])
-def api_board_subscribe():
+@blueprint.route("/api/admins")
+def api_admins():
     """
-    Subscribes a user to a board. Unsubscribes if the user is subscribed.
+    Fetches all admins.
 
-    POST requests takes in the following payload:
+    The user must be an administrator to perform this action.
+
+    Returns the following payload:
     {
-        "board_id": the board to subscribe to
+        "admins": list of Strings of admin usernames
     }
 
-    On error, return a JSON with "error" set to the message
+    Returns 200 OK or a JSON with "error" set to an associated message.
     """
     pass # TODO
 
+@blueprint.route("/api/admins/add", methods=["POST"])
+def api_admins_add():
+    """
+    Adds an administrator to the system.
+
+    The user must be an administrator to perform this action.
+
+    POST request takes in the following payload:
+    {
+        "username": the username to add as administrator
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/admins/remove", methods=["POST"])
+def api_admins_remove():
+    """
+    Removes an administrator from the system.
+
+    The user must be an administrator to perform this action.
+
+    POST request takes in the following payload:
+    {
+        "username": the username to add as administrator
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
 
 @blueprint.route("/api/board")
 def api_board():
@@ -106,10 +138,76 @@ def api_board():
         "upvoted": boolean, whether the user has upvoted it or not
     }
 
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/board/create", methods=["POST"])
+def api_board_add():
+    """
+    Creates a board.
+
+    POST requests takes in the following payload:
+    {
+        "board_name": board name with 175 char limit
+        "board_description": board description
+        "board_vote_threshold": percentage of community approval for post notification
+    }
+
+    Returns the following payload:
+    {
+        "board_id": the ID of the newly created board
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/board/subscribe", methods=["POST"])
+def api_board_subscribe():
+    """
+    Subscribes a user to a board. Unsubscribes if the user is subscribed.
+
+    POST requests takes in the following payload:
+    {
+        "board_id": the board to subscribe to
+    }
+
     On error, return a JSON with "error" set to the message
     """
     pass # TODO
 
+@blueprint.route("/api/board/delete", methods=["POST"])
+def api_board_delete():
+    """
+    Deletes a board from the database.
+
+    The user must be an administrator to perform this action.
+
+    POST requests take the following form:
+    {
+        "board_id": the ID of the board to delete
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/board/purge", methods=["POST"])
+def api_board_purge():
+    """
+    Purges boards from the database.
+
+    The user must be an administrator to perform this action.
+
+    POST requests take the following form:
+    {
+        "board_id": the ID of the board to delete
+        "days": the the minimum age of a post to purge it
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
 
 @blueprint.route("/api/post")
 def api_post():
@@ -139,12 +237,69 @@ def api_post():
         "comment_upvotes": integer, number of raw upvotes
     }
 
-    On error, return a JSON with "error" set to the message
+    Returns 200 OK or a JSON with "error" set to an associated message.
     """
     pass # TODO
 
+@blueprint.route("/api/post/create", methods=["POST"])
+def api_post_create():
+    """
+    Creates a post.
 
-@blueprint.route("/api/post_upvote", methods=["POST"])
+    POST request takes in the following payload:
+    {
+        "board_id": the ID of the board to post under
+        "post_subject": subject with 175 char limit
+        "post_description": Description of post
+    }
+
+    The user must be subscribed to the board to subscribe.
+
+    Returns the following payload:
+    {
+        "post_id": the ID of the newly created post
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/post/delete", methods=["POST"])
+def api_post_delete():
+    """
+    Deletes a post from a board.
+
+    The user must be an administrator to perform this action.
+
+    POST request takes in the following payload:
+    {
+        "board_id": the ID of the board
+        "post_id": the ID of the post
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/post/purge", methods=["POST"])
+def api_post_purge():
+    """
+    Purges posts from a board.
+
+    The user must be an administrator to perform this action.
+
+    POST request takes in the following payload:
+    {
+        "board_id": the ID of the board
+        "post_id": the ID of the post
+        "days": the the minimum age of a post to purge it
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/post/upvote", methods=["POST"])
 def api_post_upvote():
     """
     Upvotes a post. Triggers a notification if it passes the board vote threshold.
@@ -159,12 +314,32 @@ def api_post_upvote():
         "post_id": the unique ID of the post
     }
 
-    Returns a JSON with "error" or "success" set to an associated message.
+    Returns 200 OK or a JSON with "error" set to an associated message.
     """
     pass # TODO
 
+@blueprint.route("/api/comment/create", methods=["POST"])
+def api_comment_create():
+    """
+    Creates a comment under a post.
 
-@blueprint.route("/api/comment_upvote", methods=["POST"])
+    POST request takes in the following payload:
+    {
+        "board_id": the ID of the board
+        "post_id": the ID of the post
+        "message": the contents of the message
+    }
+
+    Returns the following payload:
+    {
+        "comment_id": the ID of the newly created comment
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/comment/upvote", methods=["POST"])
 def api_comment_upvote():
     """
     Upvotes a comment. 
@@ -178,6 +353,24 @@ def api_comment_upvote():
         "comment_id": the unique ID of the comment
     }
 
-    Returns a JSON with "error" or "success" set to an associated message.
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    pass # TODO
+
+@blueprint.route("/api/comment/delete", methods=["POST"])
+def api_comment_delete():
+    """
+    Deletes a comment.
+
+    The user must be an administrator to perform this action.
+
+    POST request takes in the following payload:
+    {
+        "board_id": the ID of the board
+        "post_id": the ID of the post
+        "comment_id": the ID of the comment
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
     """
     pass # TODO

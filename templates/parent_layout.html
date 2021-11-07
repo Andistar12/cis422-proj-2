@@ -1,8 +1,6 @@
 <!DOCTYPE HTML>
 
-
 <!-- This is the parent layout that all HTML pages inherit from. -->
-
 
 <html lang="en">
     <head>
@@ -61,11 +59,38 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
 					<li class="nav-item active">
-						<button class="nav-link btn" onclick="window.location.href='/'">Find your route</button>
+						<button class="nav-link btn" onclick="window.location.href='/'">Home</button>
 					</li>
                     <li class="nav-item active">
                         <button class="nav-link btn" data-toggle="modal" data-target="#aboutUsModal">About Us</button>
                     </li>
+
+
+                    {% if is_authenticated %}
+
+                        {% if is_admin %}
+                            <li class="nav-item active">
+                                <button class="nav-link btn" onclick="window.location.href='/admin.html'">Admin Panel</button>
+					        </li>
+                        {% endif %}
+
+                        <li class="nav-item active">
+                            <button class="nav-link btn" onclick="window.location.href='/findboard.html'">Find a board</button>
+					    </li>
+                        <li class="nav-item active">
+                            <button class="nav-link btn" onclick="window.location.href='/createboard.html'">Create a board</button>
+					    </li>
+                        <li class="nav-item active">
+                            <button class="nav-link btn" onclick="window.location.href='/myboards.html'">My boards</button>
+					    </li>
+                        <li class="nav-item active">
+                            <button class="nav-link btn" onclick="window.location.href='/logout'">Logout</button>
+					    </li>
+                    {% else %}
+                        <li class="nav-item active">
+                            <button class="nav-link btn" onclick="window.location.href='/login'">Login/Register</button>
+					    </li>
+                    {% endif %}
                 </ul>
             </div>
         </nav>

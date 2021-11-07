@@ -3,6 +3,7 @@ Handles all database transactions.
 
 The database has a number of MongoDB collections:
  - users: contains information about users
+ - admins: contains information about system administrators
  - boards: contains information about boards
  - [board_id]: contains posts and comments in a particular board
 
@@ -11,6 +12,12 @@ In the users collection, each user entry has the following form:
     "username": username of the person. This is the unique identifier for the user
     "password": hashed password of the user
     "subscriptions": list of board IDs
+    "admin": whether the user is an administrator
+}
+
+In the admins collection, each admin entry has the following form:
+{
+    "username": username of the person. This is the unique identifier for the administrator
 }
 
 In the boards collection, each board entry has the following form:
@@ -21,7 +28,7 @@ In the boards collection, each board entry has the following form:
     "board_date": creation date of the board
     "board_member_count": number of members on the board
     "board_members": list of members in the board
-    "board_vote_threshold": the percentage of communtiy required for vote
+    "board_vote_threshold": the percentage of community required for vote
 }
 
 In a particular board's collection, each entry is a post which has the following form:
@@ -51,12 +58,12 @@ Comments has the following form:
 
 import pymongo
 
-class AppDB():
+class AppDB:
     """
     The manager for all database transactions
     """
 
-    def __init__(self, client):
+    def __init__(self, client: pymongo.MongoClient):
         """
         Initiates the AppDB manager
 
@@ -65,7 +72,7 @@ class AppDB():
         """
         self.client = client
 
-    def fetch_user(username: str):
+    def fetch_user(self, username: str):
         """
         Returns information about a user if exists
 
@@ -76,7 +83,7 @@ class AppDB():
         """
         pass # TODO
 
-    def add_user(username: str, password: str):
+    def add_user(self, username: str, password: str):
         """
         Adds a user to the database
         
@@ -86,7 +93,7 @@ class AppDB():
         """
         pass # TODO
 
-    def remove_user(username: str):
+    def remove_user(self, username: str):
         """
         Removes a user from the database if exists
 
@@ -95,7 +102,36 @@ class AppDB():
         """
         pass # TODO
 
-    def fetch_boards(search: str, offset: int):
+    def add_admin(self, username: str):
+        """
+        Adds an administrator to the system. This has no effect if the user is already an administrator
+
+        Parameters:
+         - username: the username of the administrator
+        """
+        pass # TODO
+
+    def remove_admin(self, username: str):
+        """
+        Removes an administrator from the system.
+
+        Parameters:
+         - username: the username of the administrator to remove
+        """
+        pass # TODO
+
+    def fetch_admins(self):
+        """
+        Fetches all admins of the system.
+
+        Parameters:
+         - None
+         Returns:
+         - An array of dictionaries, each dictionary containing information about an administrator
+        """
+        pass # TODO
+
+    def fetch_boards(self, search: str, offset: int):
         """
         Returns up to 50 boards.
 
@@ -108,7 +144,7 @@ class AppDB():
         """
         pass # TODO
 
-    def fetch_board(board_id: str):
+    def fetch_board(self, board_id: str):
         """
         Fetches information about a single board.
 
@@ -121,7 +157,7 @@ class AppDB():
         """
         pass # TODO
 
-    def create_board(name: str, desc: str, vote_threshold: int):
+    def create_board(self, name: str, desc: str, vote_threshold: int):
         """
         Creates a new board and assigns it a unique ID. 
 
@@ -136,16 +172,32 @@ class AppDB():
         """
         pass # TODO
 
-    def delete_board(board_id: str):
+    def delete_board(self, board_id: str):
         """
         Deletes a board from the database.
+
+        All users are automatically unsubscribed from the deleted board.
 
         Parameters:
          - board_id: the board ID to delete
         """
         pass # TODO
 
-    def subscribe_board(username: str, board_id: str):
+    def purge_boards(self, days: int):
+        """
+        Purges all boards with no activity in recent time.
+
+        All users are automatically unsubscribed from the deleted boards.
+
+        This is an expensive operation.
+
+        Parameters:
+         - days: the number of days from today by which boards should be deleted.
+                Posts older than "days" days from today should be deleted
+        """
+        pass # TODO
+
+    def subscribe_board(self, username: str, board_id: str):
         """
         Subscribes a user to a board. Unsubscribes if the user is subscribed.
 
@@ -155,7 +207,7 @@ class AppDB():
         """
         pass # TODO
 
-    def fetch_post(board_id: str, post_id: str, include_comments: bool):
+    def fetch_post(self, board_id: str, post_id: str, include_comments: bool):
         """
         Fetches all information about a single post.
 
@@ -170,7 +222,7 @@ class AppDB():
         """
         pass # TODO
 
-    def create_post(board_id: str, username: str, subject: str, description: str):
+    def create_post(self, board_id: str, username: str, subject: str, description: str):
         """
         Creates a post
 
@@ -186,7 +238,7 @@ class AppDB():
         """
         pass # TODO
 
-    def delete_post(board_id: str, post_id: str):
+    def delete_post(self, board_id: str, post_id: str):
         """
         Deletes a post.
 
@@ -196,7 +248,7 @@ class AppDB():
         """
         pass # TODO
 
-    def upvote_post(board_id: str, post_id: str, username: str):
+    def upvote_post(self, board_id: str, post_id: str, username: str):
         """
         Upvotes a post. Rescinds the upvote if the user already upvoted it.
 
@@ -207,7 +259,20 @@ class AppDB():
         """
         pass # TODO
 
-    def add_comment(board_id: str, post_id: str, username: str, message: str):
+    def purge_posts(self, board_id: str, days: int):
+        """
+        Purges all posts older than a given number of days.
+
+        This is an expensive operation.
+
+        Parameters:
+         - board_id: the ID of the board to purge
+         - days: the number of days from today by which posts should be deleted.
+                Posts older than "days" days from today should be deleted
+        """
+        pass # TODO
+
+    def add_comment(self, board_id: str, post_id: str, username: str, message: str):
         """
         Adds a comment to a post.
 
@@ -219,7 +284,7 @@ class AppDB():
         """
         pass # TODO
 
-    def delete_comment(board_id: str, post_id: str, comment_id: str):
+    def delete_comment(self, board_id: str, post_id: str, comment_id: str):
         """
         Removes a comment from a post.
 
@@ -230,7 +295,7 @@ class AppDB():
         """
         pass # TODO
 
-    def upvote_comment(board_id: str, post_id: str, comment_id: str, username: str):
+    def upvote_comment(self, board_id: str, post_id: str, comment_id: str, username: str):
         """
         Upvotes a comment. Rescinds the upvote if the user already upvoted it.
 
