@@ -131,11 +131,14 @@ class AppDB:
         """
         pass # TODO
 
-    def fetch_boards(self, search: str, offset: int):
+    def fetch_boards(self, username: str, search: str, offset: int):
         """
-        Returns up to 50 boards.
+        Returns up to 50 boards. The ordering of the boards may be catered to the user
+
+        This is a fairly expensive operation.
 
         Parameters:
+         - username: the name of the user initiating the fetch
          - search: a search string to filter results by
          - offset: offset into board results. For example, an offset of 1 will
                     return boards 50 through 99
