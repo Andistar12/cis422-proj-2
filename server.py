@@ -38,8 +38,7 @@ except:
 app.port = config.get("port", 5000)
 app.secret_key = config.get("secret_key", "super secret")
 app.debug = config.get("debug", True)
-app.db_hostname = config.get("db_hostname", "")
-app.db_port = int(config.get("db_port", 27017))
+app.db_link = config.get("db_link", "")
 app.admins = config.get("admins", [])
 
 # Load blueprints to create server endpoints
@@ -49,7 +48,7 @@ app.register_blueprint(server_api.blueprint)
 
 # Inits the MongoDB connection
 try:
-    client = pymongo.MongoClient(app.db_hostname, app.db_port)
+    client = pymongo.MongoClient(app.db_link)
     app.db = db.AppDB(client)
     for admin in app.admins:
         app.db.add_admin(admin)
