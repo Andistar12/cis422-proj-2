@@ -1,0 +1,25 @@
+{
+  "name": "cis422-proj-2",
+  "version": "0.0.1",
+  "description": "",
+  "main": "static/script.js",
+  "scripts": {
+    "build": "postcss static/styles.css -o static/css/main.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Andistar12/cis422-proj-2.git"
+  },
+  "keywords": [],
+  "author": "nope logistics",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Andistar12/cis422-proj-2/issues"
+  },
+  "homepage": "https://github.com/Andistar12/cis422-proj-2#readme",
+  "dependencies": {
+    "autoprefixer": "^10.4.0",
+    "postcss-cli": "^9.0.2",
+    "tailwindcss": "^2.2.19"
+  }
+}
