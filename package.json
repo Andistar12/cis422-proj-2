@@ -2,9 +2,9 @@
   "name": "cis422-proj-2",
   "version": "0.0.1",
   "description": "",
-  "main": "static/script.js",
+  "main": "static/js/script.js",
   "scripts": {
-    "build": "postcss static/styles.css -o static/css/main.css"
+    "build": "postcss static/css/styles.css -o static/css/tailwind.css"
   },
   "repository": {
     "type": "git",

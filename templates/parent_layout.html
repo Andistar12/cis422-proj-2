@@ -10,16 +10,15 @@
 
         <title>tac</title>
 
-        <!-- jQuery first, then Popper.js -->
+        <!-- jQuery dependency-->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>        
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 
         <!-- Our own style sheet -->
-        <link rel="stylesheet" href="../static/css/main.css" />
+        <link rel="stylesheet" href="../static/css/tailwind.css" />
 
         <!-- Our own JS -->
-        <script src="/static/script.js"></script>
-        <script src="/static/install_pwa.js"></script>
+        <script src="/static/js/script.js"></script>
+        <script src="/static/js/install_pwa.js"></script>
 
         <!-- Serves our app manifest -->
         <link rel="manifest" href="/static/manifest.json">
@@ -36,7 +35,7 @@
         <script>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('static/sw.js');
+                    navigator.serviceWorker.register('static/js/sw.js');
                 });
             }
         </script>
@@ -81,27 +80,27 @@
                 </div>
                 <div class="hidden sm:block sm:ml-6">
                     <div class="flex space-x-4">
-                    <a href="./home.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Home</a>
+                    <a href="/home.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Home</a>
                     
                     {% if is_authenticated %}
                         
                         {% if is_admin %}
 
-                            <a href="./admin.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Admin Panel</a>
+                            <a href="/admin.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Admin Panel</a>
 
                         {% endif %}
 
-                        <a href="./findboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Find a Board</a>
+                        <a href="/findboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Find a Board</a>
 
-                        <a href="./createboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Create a Board</a>
+                        <a href="/createboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Create a Board</a>
 
-                        <a href="./myboards.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">My Boards</a>
+                        <a href="/myboards.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">My Boards</a>
 
-                        <a href="./logout" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Logout</a>
+                        <a href="/logout" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Logout</a>
                     
                     {% else %}
                         
-                        <a href="./login.html" class="right-0 text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Login/Register</a>
+                        <a href="/login.html" class="right-0 text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Login/Register</a>
                     
                     {% endif %}
                         
@@ -114,27 +113,27 @@
             <!-- Mobile menu, show/hide based on menu state. -->
             <div class="sm:hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="./home.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Home</a>
+                <a href="/home.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Home</a>
 
                 {% if is_authenticated %}
                         
                         {% if is_admin %}
 
-                            <a href="./admin.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Admin Panel</a>
+                            <a href="/admin.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Admin Panel</a>
 
                         {% endif %}
 
-                        <a href="./findboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Find Board</a>
+                        <a href="/findboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Find Board</a>
 
-                        <a href="./createboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Create Board</a>
+                        <a href="/createboard.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Create Board</a>
 
-                        <a href="./myboards.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">My Boards</a>
+                        <a href="/myboards.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">My Boards</a>
 
-                        <a href="./logout" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Logout</a>
+                        <a href="/logout" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Logout</a>
 
                 {% else %}
 
-                    <a href="./login.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Login/Register</a>
+                    <a href="/login.html" class="text-gray-300 hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Login/Register</a>
 
                 {% endif %}
             </div>
