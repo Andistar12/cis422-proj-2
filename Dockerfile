@@ -8,22 +8,26 @@
 #   docker build -t <tag> --target prod .
 
 # Init the containter and update it
-FROM python:3.8 AS dev
-FROM node:latest
-RUN apt -y update && apt -y upgrade && apt install npm -y && apt clean
+FROM nikolaik/python-nodejs:python3.8-nodejs17 AS dev
+RUN apt -y update && apt -y upgrade && apt clean
 
-# Install necessary libraries
-COPY package*.json /app
+# Install necessary libraries (omit tailwind install for speed)
 COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install -r requirements.txt
-RUN npm install
-RUN npm ci --only=production
-RUN npm run build
 
 # Run app
 CMD ["python3", "server.py"]
 
 # Setup production environment
-FROM dev AS prod
+FROM nikolaik/python-nodejs:python3.8-nodejs17 AS prod
+RUN apt -y update && apt -y upgrade && apt clean
+
+# Bring in project files
 COPY . /app
+WORKDIR /app
+
+# Install necessary libraries (install tailwind in production mode)
+RUN pip install -r requirements.txt
+RUN npm ci --only=production
+RUN npm run build
