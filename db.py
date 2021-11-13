@@ -261,7 +261,7 @@ class AppDB:
 
         return array[offset*50:(offset+1)*50]
 
-    def fetch_board(self, boardid: ObjectId, boardname: str):
+    def fetch_board(self, boardid: ObjectId):
         """
         Fetches information about a single board.
 
@@ -269,16 +269,12 @@ class AppDB:
 
         Parameters:
          - boardid: the unique board ID
-         - boardname : board name
-        NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
         Return: dictionary containing board information
         Error: return empty dictionary
         """
         board=self.db.boards
-        if boardid == None:
-            filter = {"board_name": boardname}
-        else:
-            filter = {"_id": boardid}
+        filter = {"_id": boardid}
         val = board.find_one(filter)
         if val != None:
             return board.find_one(filter)
@@ -305,7 +301,7 @@ class AppDB:
         board=self.db.boards
         user=self.db.users
         if(board.find_one({"board_name":boardname})!=None):
-            return None
+            pass
         else:
             if ownerid==None:
                 filter={"username":owner}
@@ -326,8 +322,10 @@ class AppDB:
                 board_id=board.find_one({"board_name":boardname})["_id"]
                 user.update_one(filter, {"$push": {"boards_owned":board_id}})
                 return board_id
+            else:
+                return None
 
-    def delete_board(self, ownerid: ObjectId, owner: str, boardid: ObjectId, boardname: str):
+    def delete_board(self, ownerid: ObjectId, owner: str, boardid: ObjectId):
         """
         Deletes a board from the database.
 
@@ -338,8 +336,7 @@ class AppDB:
          - owner : name of the owner
          NOTE: use only ownerid or owner, pass "None" to unused parameters!
          - boardid: the board ID to delete
-         - boardname : the board name to delete
-         NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
         Return: the id of board deleted
         Error: return None
         """
@@ -347,10 +344,7 @@ class AppDB:
         user=self.db.users
         admin=self.db.admins
         post=self.db.posts
-        if boardid==None:
-            filter={"board_name":boardname}
-        else:
-            filter={"_id":boardid}
+        filter={"_id":boardid}
         val=board.find_one(filter)
         if val != None:
             if ownerid==None:
@@ -386,7 +380,7 @@ class AppDB:
         """
         pass  # TODO
 
-    def subscribe_board(self, userid: ObjectId, user_name: str, boardid: ObjectId, boardname: str):
+    def subscribe_board(self, userid: ObjectId, user_name: str, boardid: ObjectId):
         """
         Subscribes a user to a board.
 
@@ -395,8 +389,7 @@ class AppDB:
          - user_name: the user that is subscribing
          NOTE: use only userid or user_name, pass "None" to unused parameters!
          - boardid: the ID of the board the user is subscribing to
-         - boardname: name of the board
-         NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
          Return: subscribed board id
          Error: return None
         """
@@ -406,13 +399,10 @@ class AppDB:
             u_filter={"username": user_name}
         else:
             u_filter={"_id":userid}
-        if boardid==None:
-            b_filter ={"board_name":boardname}
-        else:
-            b_filter={"_id": boardid}
+        b_filter={"_id": boardid}
         theuser=user.find_one(u_filter)
         theboard=board.find_one(b_filter)
-        if (theuser!=None) and (theboard!=None):
+        if (theuser!=None) and (theboard!=None) and (boardid not in theuser["subscriptions"]) :
             user.update_one(u_filter,{"$push":{"subscriptions":theboard["_id"]}})
             board.update_one(b_filter,{"$push":{"board_members":theuser["_id"]}})
             board.update_one(b_filter, {"$inc": {"board_member_count": 1}})
@@ -420,7 +410,7 @@ class AppDB:
         else:
             return None
 
-    def unsubscribe_board(self, userid: ObjectId, user_name: str, boardid: ObjectId, boardname: str):
+    def unsubscribe_board(self, userid: ObjectId, user_name: str, boardid: ObjectId):
         """
         Unsubscribes a user to a board.
 
@@ -428,8 +418,7 @@ class AppDB:
         - userid: the id of the user
         - user_name: the user that is subscribing
         - board_id: the ID of the board the user is subscribing to
-        - boardname: name of the board
-        NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
         NOTE: use only userid or user_name, pass "None" to unused parameters!
         Return: the unsubscribed board id
         Error: return None
@@ -440,13 +429,10 @@ class AppDB:
             u_filter = {"username": user_name}
         else:
             u_filter = {"_id": userid}
-        if boardid==None:
-            b_filter ={"board_name":boardname}
-        else:
-            b_filter={"_id": boardid}
+        b_filter={"_id": boardid}
         theuser = user.find_one(u_filter)
         theboard = board.find_one(b_filter)
-        if (theuser != None) and (theboard != None):
+        if (theuser != None) and (theboard != None) and (boardid in theuser["subscriptions"]):
             user.update_one(u_filter, {"$pull": {"subscriptions": theboard["_id"]}})
             board.update_one(b_filter, {"$pull": {"board_members": theuser["_id"]}})
             board.update_one(b_filter, {"$inc": {"board_member_count": -1}})
@@ -481,7 +467,7 @@ class AppDB:
         else:
             return {}
 
-    def fetch_posts(self, board_id: ObjectId, boardname: str):
+    def fetch_posts(self, board_id: ObjectId):
         """
         Fetches all information about posts in a board
 
@@ -489,9 +475,6 @@ class AppDB:
 
         Parameters:
          - board_id: the ID of the board the post belongs under
-         - boardname: name of the board
-
-        NOTE: use only boardid or boardname, pass "None" to unused parameters!
 
         Returns:
          -  An array of dictionaries of posts
@@ -499,11 +482,7 @@ class AppDB:
         """
         board = self.db.boards
         post = self.db.posts
-        if board_id == None:
-            b_filter = {"board_name": boardname}
-
-        else:
-            b_filter = {"_id": board_id}
+        b_filter = {"_id": board_id}
 
         theboard=board.find_one(b_filter)
         if  (theboard!=None):
@@ -512,7 +491,7 @@ class AppDB:
         else:
             return []
 
-    def create_post(self, ownerid: ObjectId, owner: str, board_id: ObjectId, boardname: str,  subject: str, description: str):
+    def create_post(self, ownerid: ObjectId, owner: str, board_id: ObjectId,  subject: str, description: str):
         """
         Creates a post
 
@@ -522,9 +501,9 @@ class AppDB:
          - ownerid: the user id who is creating the post
          - owner: owner of the post
          - board_id: the ID of the board the post belongs under
-         - boardname: board name
+
          NOTE: use only ownerid or owner, pass "None" to unused parameters!
-         NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
          - subject: the subject of the post
          - description: the description of the post
         Returns:
@@ -534,10 +513,7 @@ class AppDB:
         user=self.db.users
         board=self.db.boards
         post=self.db.posts
-        if board_id==None:
-            b_filter={"board_name":boardname}
-        else:
-            b_filter={"_id":board_id}
+        b_filter={"_id":board_id}
         if ownerid==None:
             o_filter={"username":owner}
         else:
@@ -648,7 +624,7 @@ class AppDB:
          - owner: name of the owner
 
          NOTE: use only ownerid or owner, pass "None" to unused parameters!
-         NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
          - post_id: the ID of the post the comment falls under
          - message: the message content of the comment
          Return: id of the comment added
@@ -677,16 +653,15 @@ class AppDB:
         else:
             return None
 
-    def delete_comment(self, ownerid: ObjectId, owner: str,   comment_id: ObjectId):
+    def delete_comment(self, ownerid: ObjectId, owner: str,  post_id: ObjectId, comment_id: ObjectId):
         """
         Removes a comment from a post.
 
         Parameters:
          - ownerid: id of the owner
          - owner: name of the owner
-
+         - post_id: id of the post it belongs to
          NOTE: use only ownerid or owner, pass "None" to unused parameters!
-         NOTE: use only boardid or boardname, pass "None" to unused parameters!
 
          - comment_id: id of the comment
          Return: id of the comment deleted
@@ -703,25 +678,24 @@ class AppDB:
         else:
             o_filter = {"_id": ownerid}
         theowner = user.find_one(o_filter)
-        thecomment = post.find_one({"post_comments._id":comment_id })
-        if (thecomment!=None) and (theowner!=None):
+        thecomment = post.find_one({"_id":post_id,"post_comments._id":comment_id })
+        if (thecomment!=None) :
             # check owner: to be implemented
-            post.update_one({"post_comments._id":comment_id }, {"$pull":{"post_comments":{"_id":comment_id}}})
+            post.update_one({"_id":post_id }, {"$pull":{"post_comments":{"_id":comment_id}}})
 
             return comment_id
         else:
             return None
 
-    def upvote_comment(self, upvoterid: ObjectId, upvoter: str,   comment_id: ObjectId):
+    def upvote_comment(self, upvoterid: ObjectId, upvoter: str, post_id: ObjectId,  comment_id: ObjectId):
         """
         Upvotes a comment. Rescinds the upvote if the user already upvoted it.
 
         Parameters:
          - upvoterid: id of the upvoter
          - upvoter: name of the upvoter
-
+         - post_id: id of the post it belongs to
          NOTE: use only boardid or boardname, pass "None" to unused parameters!
-         NOTE: use only upvoterid or upvotername, pass "None" to unused parameters!
 
          - comment_id: the ID of the comment being upvoted
         Return: id of the comment upvoted
@@ -734,11 +708,11 @@ class AppDB:
             u_filter = {"username": upvoter}
         else:
             u_filter = {"_id": upvoterid}
-        thecomment = post.find_one({"post_comments._id":comment_id})
+        thecomment = post.find_one({"_id":post_id,"post_comments._id":comment_id})
         theupvoter = user.find_one(u_filter)
         if (theupvoter != None) and (thecomment != None):
-            post.update_one({"post_comments._id":comment_id},{"$push":{"post_comments.$.comment_upvoters":theupvoter["_id"]}})
-            post.update_one({"post_comments._id": comment_id},{"$inc": {"post_comments.$.comment_upvotes": 1}})
+            post.update_one({"_id":post_id,"post_comments._id":comment_id},{"$push":{"post_comments.$.comment_upvoters":theupvoter["_id"]}})
+            post.update_one({"_id":post_id,"post_comments._id":comment_id},{"$inc": {"post_comments.$.comment_upvotes": 1}})
             return comment_id
         else:
             return None
