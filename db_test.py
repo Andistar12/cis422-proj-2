@@ -54,7 +54,7 @@ class DBTests(unittest.TestCase):
 
     def test_add_user(self):
         self.db.add_user("Andistar12", "super secret password")
-        user = self.db.fetch_user("Andistar12")
+        user = self.db.fetch_user(None,"Andistar12")
         self.assertIsNotNone(user)
         self.assertIn("password", user)
         self.assertEqual(user["password"], "super secret password")
