@@ -189,10 +189,12 @@ class AppDB:
         admin=self.db.admins
         if userid==None:
             filter={"username": user_name}
+
         else:
             filter={"_id":userid}
+
         val=user.find_one(filter)
-        if val!=None:
+        if (val!=None) :
             if val["admin"]!=1:
                 user.update_one({"username": val["username"]},{"$set":{"admin":1}})
                 admin.insert_one({"username":val["username"],
@@ -216,8 +218,10 @@ class AppDB:
         admin = self.db.admins
         if userid==None:
             filter={"username":user_name}
+
         else:
             filter ={"_id":userid}
+
         val=admin.find_one(filter)
         if val != None:
             admin.delete_one(filter)
@@ -325,16 +329,16 @@ class AppDB:
             else:
                 return None
 
-    def delete_board(self, ownerid: ObjectId, owner: str, boardid: ObjectId):
+    def delete_board(self, operator_id: ObjectId, operator: str, boardid: ObjectId):
         """
         Deletes a board from the database.
 
         All users are automatically unsubscribed from the deleted board.
         This is expensive operation
         Parameters:
-         - ownerid : id of the owner
-         - owner : name of the owner
-         NOTE: use only ownerid or owner, pass "None" to unused parameters!
+         - operator_id : id of the operator
+         - operator : name of the operator
+         NOTE: use only operator_id or operator, pass "None" to unused parameters!
          - boardid: the board ID to delete
 
         Return: the id of board deleted
@@ -347,10 +351,10 @@ class AppDB:
         filter={"_id":boardid}
         val=board.find_one(filter)
         if val != None:
-            if ownerid==None:
-                id=user.find_one({"username":owner})["_id"]
+            if operator_id==None:
+                id=user.find_one({"username":operator})["_id"]
             else:
-                id=ownerid
+                id=operator_id
             if (id==val["board_owner"]) or (admin.find_one({"userid":id})!=None):
                 board.delete_one(filter)
                 member = val["board_members"]
@@ -520,7 +524,7 @@ class AppDB:
             o_filter={"_id":ownerid}
         theowner=user.find_one(o_filter)
         theboard=board.find_one(b_filter)
-        if (theowner!=None) and (theboard!=None):
+        if (theowner!=None) and (theboard!=None) and (theboard["_id"] in theowner["subscriptions"]):
 
             post.insert_one({"board_id":theboard["_id"],
                              "post_subject":subject,
@@ -539,15 +543,15 @@ class AppDB:
         else:
             return None
 
-    def delete_post(self, ownerid: ObjectId, owner: str,  post_id: ObjectId):
+    def delete_post(self, operator_id: ObjectId, operator: str,  post_id: ObjectId):
         """
         Deletes a post.
 
         Parameters:
-         - ownerid: id of the owner of the post
-         - owner: name of the owner
+         - operator_id: id of the operator
+         - operator: name of the operator
 
-         NOTE: use only ownerid or owner, pass "None" to unused parameters!
+         NOTE: use only operator_id or operator, pass "None" to unused parameters!
 
          - post_id: the ID of the post to delete
          Return: the id of deleted post
@@ -558,11 +562,11 @@ class AppDB:
         admin=self.db.admins
         post=self.db.posts
 
-        if ownerid == None:
-            o_filter = {"username": owner}
+        if operator_id == None:
+            o_filter = {"username": operator}
 
         else:
-            o_filter = {"_id": ownerid}
+            o_filter = {"_id": operator_id}
         theowner = user.find_one(o_filter)
         thepost = post.find_one({"_id":post_id})
         if ((theowner["_id"] ==thepost["post_owner"]) or (admin.find_one({"userid":theowner["_id"]})!=None)) and (thepost != None):
@@ -595,7 +599,7 @@ class AppDB:
             u_filter = {"_id": upvoterid}
         thepost = post.find_one({"_id":post_id})
         theupvoter = user.find_one(u_filter)
-        if (theupvoter != None) and (thepost != None):
+        if (theupvoter != None) and (thepost != None) and (thepost["post_notified"]==0) and (theupvoter["_id"] not in thepost["post_upvoters"]):
             post.update_one({"_id":post_id}, {"$push":{"post_upvoters":theupvoter["_id"]}})
             post.update_one({"_id": post_id}, {"$inc": {"post_upvotes": 1}})
             return post_id
@@ -653,13 +657,13 @@ class AppDB:
         else:
             return None
 
-    def delete_comment(self, ownerid: ObjectId, owner: str,  post_id: ObjectId, comment_id: ObjectId):
+    def delete_comment(self, operator_id: ObjectId, operator: str,  post_id: ObjectId, comment_id: ObjectId):
         """
         Removes a comment from a post.
 
         Parameters:
-         - ownerid: id of the owner
-         - owner: name of the owner
+         - operator_id: id of the operator
+         - operator: name of the operator
          - post_id: id of the post it belongs to
          NOTE: use only ownerid or owner, pass "None" to unused parameters!
 
@@ -672,12 +676,12 @@ class AppDB:
         admin = self.db.admins
         post = self.db.posts
 
-        if ownerid == None:
-            o_filter = {"username": owner}
+        if operator_id == None:
+            o_filter = {"username": operator}
 
         else:
-            o_filter = {"_id": ownerid}
-        theowner = user.find_one(o_filter)
+            o_filter = {"_id": operator_id}
+        # theowner = user.find_one(o_filter)
         thecomment = post.find_one({"_id":post_id,"post_comments._id":comment_id })
         if (thecomment!=None) :
             # check owner: to be implemented
@@ -710,7 +714,7 @@ class AppDB:
             u_filter = {"_id": upvoterid}
         thecomment = post.find_one({"_id":post_id,"post_comments._id":comment_id})
         theupvoter = user.find_one(u_filter)
-        if (theupvoter != None) and (thecomment != None):
+        if (theupvoter != None) and (thecomment != None) and ():
             post.update_one({"_id":post_id,"post_comments._id":comment_id},{"$push":{"post_comments.$.comment_upvoters":theupvoter["_id"]}})
             post.update_one({"_id":post_id,"post_comments._id":comment_id},{"$inc": {"post_comments.$.comment_upvotes": 1}})
             return comment_id
