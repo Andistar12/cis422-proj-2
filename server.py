@@ -41,6 +41,10 @@ app.debug = config.get("debug", True)
 app.db_link = config.get("db_link", "")
 app.admins = config.get("admins", [])
 
+# Hook into Gunicorn logger
+gunicorn_error_logger = logging.getLogger('gunicorn.error')
+app.logger.handlers.extend(gunicorn_error_logger.handlers)
+
 # Load blueprints to create server endpoints
 app.register_blueprint(server_webpages.blueprint)
 app.register_blueprint(server_auth.blueprint)
