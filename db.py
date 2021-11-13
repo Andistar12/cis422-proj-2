@@ -83,14 +83,14 @@ class AppDB:
     The manager for all database transactions
     """
 
-    def __init__(self,client):
+    def __init__(self, client):
         """
         Initiates the AppDB manager
 
         Parameters:
          - client: the MongoDB client
         """
-        self.client = MongoClient("mongodb+srv://tchen3:2964@cluster0.6se93.mongodb.net/p2_app_db?retryWrites=true&w=majority")
+        self.client = client
         self.db=self.client.p2_db
 
 
