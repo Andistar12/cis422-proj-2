@@ -83,7 +83,7 @@ class AppDB:
     The manager for all database transactions
     """
 
-    def __init__(self):
+    def __init__(self,client):
         """
         Initiates the AppDB manager
 
@@ -699,7 +699,7 @@ class AppDB:
         user = self.db.users
         board = self.db.boards
         admin = self.db.admins
-        post=self.db.admins
+        post = self.db.posts
 
 
         if ownerid == None:
@@ -709,9 +709,9 @@ class AppDB:
             o_filter = {"_id": ownerid}
         theowner = user.find_one(o_filter)
         thecomment = post.find_one({"_id":post_id})
-        if (True):
+        if (thecomment!=None) and (theowner!=None):
             # check owner: to be implemented
-            post.update_one({"_id":post_id }, {"$pull":{"post_comments":{"_id":comment_id}}})
+            post.update_one({"post_comments._id":comment_id }, {"$pull":{"post_comments":{"_id":comment_id}}})
             return comment_id
         else:
             return None
