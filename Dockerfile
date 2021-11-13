@@ -11,23 +11,15 @@
 FROM nikolaik/python-nodejs:python3.8-nodejs17 AS dev
 RUN apt -y update && apt -y upgrade && apt clean
 
-# Install necessary libraries (omit tailwind install for speed)
-COPY requirements.txt /app/requirements.txt
+# Install pip requirements
+COPY . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
 
-# Run app
-CMD ["python3", "server.py"]
-
 # Setup production environment
-FROM nikolaik/python-nodejs:python3.8-nodejs17 AS prod
-RUN apt -y update && apt -y upgrade && apt clean
+FROM dev AS prod
 
-# Bring in project files
-COPY . /app
-WORKDIR /app
-
-# Install necessary libraries (install tailwind in production mode)
+# Install tailwind in production mode
 RUN pip install -r requirements.txt
 RUN npm ci --only=production
 RUN npm run build

@@ -22,6 +22,7 @@ services:
             - 5000:5000
         environment:
             - CONFIG_LOC=/run/secrets/config
+        command: "python3 server.py"
         volumes:
             - .:/app
             - ./config.json:/run/secrets/config
