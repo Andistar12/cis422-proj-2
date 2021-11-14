@@ -1,29 +1,17 @@
 # Handles user authentication and account creation
-import os
-import secrets
-import datetime
+
 import flask_login
-import hashlib
 import flask
 
-from os import O_RDONLY
-from flask import Flask, render_template, request, jsonify
+from flask import render_template, request, jsonify
 from flask_restful import Resource, Api
-import json
-import pandas as pd
-import logging
 
-from itsdangerous import (TimedJSONWebSignatureSerializer \
-                                  as Serializer, BadSignature, \
-                                  SignatureExpired)
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 
 from passlib.apps import custom_app_context as pwd_context
 from passlib.hash import sha256_crypt as pwd_context
 
 from pymongo import MongoClient
-
-app = Flask(__name__)
-api = Api(app)
 
 # importing our database 
 # client = MongoClient('mongodb://' + os.environ['MONGODB_HOSTNAME'], 27017)
@@ -98,60 +86,62 @@ blueprint = flask.Blueprint("auth_blueprint", __name__)
 # The Flask login manager
 login_manager = flask_login.LoginManager()
 
-# def is_admin():
-#     """
-#     Returns whether the user is an administrator
-#     """
-#     return False # TODO
+def is_admin():
+    """
+    Returns whether the user is an administrator
+    """
+    return False # TODO
 
-# def is_authenticated():
-#     """
-#     Return whether the user is logged in
-#     """
-#     return False  # TODO
+def is_authenticated():
+    """
+    Return whether the user is logged in
+    """
+    return False  # TODO
 
-# @login_manager.user_loader
-# def user_loader(username):
-#     """
-#     Loads the user if it exists
-#     """
-#     pass # TODO 
+@login_manager.user_loader
+def user_loader(username):
+    """
+    Loads the user if it exists
+    """
+    user = flask.current_app.db.fetch_user(userid=None, user_name=username)
 
-# # Page endpoints
+    pass # TODO
 
-# class User(flask_login.UserMixin):
-#     """
-#     The user class object for session/auth purposes
-#     """
+# Page endpoints
+
+class User(flask_login.UserMixin):
+    """
+    The user class object for session/auth purposes
+    """
     
-#     def __init__(self):
-#         pass # TODO
+    def __init__(self):
+        pass # TODO
 
-#     def get_id(self):
-#         return str(self.id)
+    def get_id(self):
+        return str(self.id)
 
-# @blueprint.route("/register", methods=["GET", "POST"])
-# def register():
-#     """
-#     GET: Returns the register account page register.html
-#     POST: Attempts to register the account and redirects to the login page login.html
-#     """
-#     pass # TODO
+@blueprint.route("/register.html", methods=["GET", "POST"])
+def register():
+    """
+    GET: Returns the register account page register.html
+    POST: Attempts to register the account and redirects to the login page login.html
+    """
+    pass # TODO
 
-# @blueprint.route("/login.html", methods=["GET", "POST"])
-# def login():
-#     """
-#     GET: Returns the login page login.html
-#     POST: Attempts to log in the user and redirects to my boards myboards.html
-#     """
-#     pass # TODO
+@blueprint.route("/login.html", methods=["GET", "POST"])
+def login():
+    """
+    GET: Returns the login page login.html
+    POST: Attempts to log in the user and redirects to my boards myboards.html
+    """
+    pass # TODO
 
-# @blueprint.route("/logout")
-# def logout():
-#     """
-#     Logs out the user and redirects to the home page home.html 
-#     """
-#     pass # TODO
+@blueprint.route("/logout")
+def logout():
+    """
+    Logs out the user and redirects to the home page home.html
+    """
+    pass # TODO
 
 # Run the application
 if __name__ == '__main__':
