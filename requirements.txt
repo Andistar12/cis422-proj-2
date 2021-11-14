@@ -6,11 +6,6 @@ passlib==1.7.4
 flask-httpauth==4.5.0
 itsdangerous==2.0.1
 pymongo[srv]==3.12.0
-
-requests
-Flask-Login
-wtforms
-Flask-WTF
-Flask-RESTful
-pymongo
-
+pywebpush==1.14.0
+wtforms==3.0.0
+flask-restful==0.3.9

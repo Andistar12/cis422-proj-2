@@ -12,14 +12,15 @@ FROM nikolaik/python-nodejs:python3.8-nodejs17 AS dev
 RUN apt -y update && apt -y upgrade && apt clean
 
 # Install pip requirements
-COPY . /app
+COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install -r requirements.txt
 
 # Setup production environment
 FROM dev AS prod
 
+COPY . /app
+
 # Install tailwind in production mode
-RUN pip install -r requirements.txt
 RUN npm ci --only=production
 RUN npm run build
