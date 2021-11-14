@@ -67,3 +67,17 @@ self.addEventListener('fetch', event => {
     );
   }
 });
+
+self.addEventListener('push', function(event) {
+    console.log('[Service Worker] Push Received.');
+    console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
+
+    const title = 'Push Codelab';
+    const options = {
+        body: `"${event.data.text()}"`,
+        icon: '/images/svg-seeklogo.com.svg',
+        badge: '/images/svg-seeklogo.com.svg'
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});

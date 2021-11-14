@@ -11,6 +11,7 @@ import pymongo # Used for MongoDB bindings
 import server_webpages
 import server_auth
 import server_api
+import server_notifs
 import db
 
 # Global variables
@@ -41,6 +42,11 @@ app.debug = config.get("debug", True)
 app.db_link = config.get("db_link", "")
 app.admins = config.get("admins", [])
 
+# Fetch VAPID key parameters
+app.vapid_public_key = config.get("vapid_public_key", "")
+app.vapid_private_key = config.get("vapid_private_key", "")
+app.vapid_email = config.get("vapid_email", "")
+
 # Hook into Gunicorn logger
 gunicorn_error_logger = logging.getLogger('gunicorn.error')
 app.logger.handlers.extend(gunicorn_error_logger.handlers)
@@ -49,6 +55,7 @@ app.logger.handlers.extend(gunicorn_error_logger.handlers)
 app.register_blueprint(server_webpages.blueprint)
 app.register_blueprint(server_auth.blueprint)
 app.register_blueprint(server_api.blueprint)
+app.register_blueprint(server_notifs.blueprint)
 
 # Inits the MongoDB connection
 try:

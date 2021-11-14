@@ -3,5 +3,8 @@
     "secret_key": "",
     "debug": "True",
     "db_link": "mongo:27017",
-    "admins": []
+    "admins": [],
+    "vapid_public_key": "",
+    "vapid_private_key": "",
+    "vapid_email": ""
 }

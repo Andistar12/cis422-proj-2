@@ -18,6 +18,7 @@
 
         <!-- Our own JS -->
         <script src="/static/js/script.js"></script>
+        <script src="/static/js/push.js"></script>
 
         <!-- Serves our app manifest -->
         <link rel="manifest" href="/static/manifest.json">
@@ -29,15 +30,6 @@
         <meta name="msapplication-navbutton-color" content="#2974ce">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="msapplication-starturl" content="/">
-
-        <!-- Setup the service worker-->
-        <script>
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('static/js/sw.js');
-                });
-            }
-        </script>
     </head>
     <body>
         <nav class="bg-jade">
@@ -103,7 +95,9 @@
                         <a href="/register.html" class="right-0 text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Register</a>
                     
                     {% endif %}
-                        
+                        <!-- The button to toggle notifications -->
+                        <a id="push-button" class="right-0 text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Enable Notifications</a>
+
                     </div>
                 </div>
                 </div>
@@ -137,6 +131,9 @@
                     <a href="/register.html" class="right-0 text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Register</a>
 
                 {% endif %}
+                    <!-- The button to toggle notifications -->
+                    <a id="push-button" class="right-0 text-gray-300 hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Enable Notifications</a>
+
             </div>
             </div>
         </nav>
