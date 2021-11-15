@@ -11,7 +11,8 @@ module.exports = {
       jade: '#01A66F',
       medium_aquamarine: "#75CE9F",
       madang: "#BDD99E",
-      chardonnay: "#FFC06E"
+      chardonnay: "#FFC06E",
+      nav_grey: "#F6F6F6"
     },
     extend: {},
   },
