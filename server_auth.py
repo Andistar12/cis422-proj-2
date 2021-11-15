@@ -3,20 +3,16 @@
 import flask_login
 import flask
 
-from flask import render_template, request, session, redirect, url_for, flash, abort
-from flask_restful import Resource, Api
+from flask import render_template, request, session, redirect, url_for, flash
 
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
-
-from passlib.apps import custom_app_context as pwd_context
 from passlib.hash import sha256_crypt as pwd_context
 
-from flask_login import (LoginManager, current_user, login_required,
-                         login_user, logout_user, UserMixin,
-                         confirm_login, fresh_login_required)
+from flask_login import login_required, logout_user, UserMixin, fresh_login_required, login_user
 from flask_wtf import FlaskForm as Form
 from wtforms import BooleanField, StringField, validators
 
+import db_connect
+import config
    
 class LoginForm(Form):
     username = StringField('Username', [
@@ -39,10 +35,11 @@ class RegisterForm(Form):
         message=u"Huh, little too short for a password."),
         validators.InputRequired(u"Forget something?")])   
 
+def get_salt(base_string: str):
+    return base_string.replace(" ", "").zfill(16)
 
 def hash_password(password):
-    return pwd_context.encrypt(password)
-
+    return pwd_context.hash(password, salt=get_salt(config.get("secret_key", "super secret")))
 
 def verify_password(password, hashVal):
     return pwd_context.verify(password, hashVal)
@@ -52,38 +49,49 @@ def verify_password(password, hashVal):
 blueprint = flask.Blueprint("auth_blueprint", __name__)
 
 # The Flask login manager
+@blueprint.record_once
+def on_load(state):
+    login_manager.init_app(state.app)
+
+class UserObject(UserMixin):
+    def __init__(self, username: str):
+        self.username = username
+
+    def get_id(self):
+        return str(self.username)
+
 login_manager = flask_login.LoginManager()
 
-@login_required
-def is_admin(username):
+def is_admin():
     """
     Returns whether the user is an administrator
     """
-    #get the list of current admins
-    admins = flask.current_app.db.fetch_admins(user_name = username)
-    if username in admins:
-        return True
+    # Check if they are even logged in first
+    if not is_authenticated():
+        return False
+
+    # get the list of current admins
+    admins = db_connect.get_db().fetch_admins()
+    for admin in admins:
+        if flask_login.current_user.get_id() == admin["username"]:
+            return True
     return False
 
-def is_authenticated(username):
+def is_authenticated():
     """
     Return whether the user is logged in
     """
-    if username in session:
-        print('You are loggen in as ' + session['username'])
-        return True 
-    return False  
+    return flask_login.current_user.is_authenticated
 
 @login_manager.user_loader
 def user_loader(username):
     """
-    Loads the user if it exists
+    Loads the user if they are logged in
     """
-    user = flask.current_app.db.fetch_user(user_name=username)
-    if user.get('username') == username:
-        session['username'] = username        
-    return 'The user with username' + username + ' has been loaded in.'
-    
+    return UserObject(username)
+    #if "username" in session:
+    #    return UserObject(session["username"])
+    #return None
 
 @blueprint.route("/register.html", methods=["GET", "POST"])
 def register():
@@ -97,19 +105,20 @@ def register():
         if form.validate_on_submit() and "username" in request.form and "password" in request.form:
             username = request.form["username"].encode('utf-8')
             password = request.form["password"].encode('utf-8')
-                
-                    
+
             #search for a user with the provided user name
-            user = flask.current_app.db.fetch_user(user_name = username)
+            user = db_connect.get_db().fetch_user(userid=None, user_name = username)
             #if the user isnt found, hash the password and register the new user      
             if user.get('username') is None:
                 hashed_pass = hash_password(password)
-                flask.current_app.db.add_user(user_name = username, password = hashed_pass)
+                new_id = db_connect.get_db().add_user(user_name = username, password = hashed_pass)
                 session['username'] = request.form['username']
-                return redirect(url_for('home.html'))
+                return redirect(url_for('auth_blueprint.login')) # Redirect wants function name, not endpoint
             else:
                 return 'A user with that username already exists, please try another username.'   
     #otherwise it is a GET request or error and we render the register page
+        else:
+            return "failed to validate"
     else:
         return render_template("register.html", form=form)
 
@@ -127,16 +136,21 @@ def login():
             username = request.form["username"].encode('utf-8')
             password = request.form["password"].encode('utf-8')
             
-            user = flask.current_app.db.fetch_user(user_name = username)
+            user = db_connect.get_db().fetch_user(userid=None, user_name = username)
             #if that username exits, checking the password for a match
             if user.get('username') is not None:
-                if user.get('password') == verify_password(password, user.get('password')):
-                    session['username'] = username        
-                    return redirect(url_for('myboards.html'))
+                if verify_password(password, user.get('password')):
+                    #session['username'] = username
+                    user = UserObject(username)
+                    if login_user(user, remember=True):
+                        session.permanent = True
+                        return redirect(url_for('pages_blueprint.my_boards')) # Redirect wants function name, not endpoint
+                    else:
+                        return "An internal error occurred loggin you in"
                 else:
                     return 'Invalid username or password, please try again!'
             else:
-                return 'Invalid username or password, please try again!'    
+                return 'Invalid username or password, please try again!'
     #handling invalid inputs and the GET requests        
         flash('Invalid input, please try again!')
         return render_template("login.html", form=form)
@@ -151,7 +165,7 @@ def logout():
     """
     logout_user()
     flash("Logged out.")
-    return redirect(url_for("home.html"))
+    return redirect(url_for('pages_blueprint.index'))
 
 # # Run the application
 # if __name__ == '__main__':
