@@ -40,7 +40,7 @@
             <div class="relative flex items-center justify-between h-16">
                 <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
                 <!-- Mobile menu button-->
-                <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-nav_grey hover:text-chardonnay hover:bg-medium_aquamarine focus:outline-none focus:ring-2 focus:ring-inset focus:ring-nav_grey" aria-controls="mobile-menu" aria-expanded="false">
                     <span class="sr-only">Open main menu</span>
                     <!--
                     Icon when menu is closed.
@@ -71,32 +71,33 @@
                 </div>
                 <div class="hidden sm:block sm:ml-6">
                     <div class="flex space-x-4">
-                    <a href="/home.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Home</a>
+                    <a href="/home.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Home</a>
                     
                     {% if is_authenticated %}
                         
                         {% if is_admin %}
 
-                            <a href="/admin.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Admin Panel</a>
+                            <a href="/admin.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Admin Panel</a>
 
                         {% endif %}
 
-                        <a href="/findboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Find a Board</a>
+                        <a href="/findboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Find a Board</a>
 
-                        <a href="/createboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Create a Board</a>
+                        <a href="/createboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Create a Board</a>
 
-                        <a href="/myboards.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">My Boards</a>
+                        <a href="/myboards.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">My Boards</a>
 
-                        <a href="/logout" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Logout</a>
+                        <a href="/logout" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Logout</a>
                     
                     {% else %}
                         
-                        <a href="/login.html" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Login</a>
-                        <a href="/register.html" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Register</a>
+                        <a href="/login.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Login</a>
+
+                        <a href="/register.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Register</a>
                     
                     {% endif %}
                         <!-- The button to toggle notifications -->
-                        <a id="push-button" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Enable Notifications</a>
+                        <a id="push-button" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Enable Notifications</a>
 
                     </div>
                 </div>
@@ -107,33 +108,33 @@
             <!-- Mobile menu, show/hide based on menu state. -->
             <div class="sm:hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="/home.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Home</a>
+                <a href="/home.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Home</a>
 
                 {% if is_authenticated %}
                         
                         {% if is_admin %}
 
-                            <a href="/admin.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Admin Panel</a>
+                            <a href="/admin.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Admin Panel</a>
 
                         {% endif %}
 
-                        <a href="/findboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Find Board</a>
+                        <a href="/findboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Find Board</a>
 
-                        <a href="/createboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Create Board</a>
+                        <a href="/createboard.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Create Board</a>
 
-                        <a href="/myboards.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">My Boards</a>
+                        <a href="/myboards.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay block px-3 py-2 rounded-md text-base font-medium" aria-current="page">My Boards</a>
 
-                        <a href="/logout" class="text-nav_grey hover:bg-medium_aquamarine hover:text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Logout</a>
+                        <a href="/logout" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Logout</a>
 
                 {% else %}
 
-                    <a href="/login.html" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Login</a>
-                    
-                    <a href="/register.html" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Register</a>
+                    <a href="/login.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Login</a>
+
+                    <a href="/register.html" class="text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Register</a>
 
                 {% endif %}
                     <!-- The button to toggle notifications -->
-                    <a id="push-button" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Enable Notifications</a>
+                    <a id="push-button" class="right-0 text-nav_grey hover:bg-medium_aquamarine hover:text-chardonnay px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Enable Notifications</a>
 
             </div>
             </div>
