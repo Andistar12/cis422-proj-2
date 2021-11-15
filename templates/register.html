@@ -12,6 +12,7 @@
 		<div class="col-4">
 			<div class="form-group">
 				<label class="form-check-label" for="usernameBox">{{ form.username.label }}</label>
+				<br>
 				{{ form.username(size=32, class="form-control", id="usernameBox") }}
 				<!-- <input type="text" class="form-control" placeholder="Username" aria-label="Username" name="username"> -->
 				{% if form.username.errors %}
@@ -24,6 +25,7 @@
 			</div>
 			<div class="form-group">
 				<label class="form-check-label" for="passwordBox">{{ form.password.label }}</label>
+				<br>
 				{{ form.password(size=32, class="form-control", id="passwordBox") }}
 				<!-- <input type="text" class="form-control" placeholder="Password" aria-label="Password" name="password"> -->
 				{% if form.password.errors %}
