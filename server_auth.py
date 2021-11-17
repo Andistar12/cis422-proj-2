@@ -103,15 +103,15 @@ def register():
     #handling the POST requests
     if request.method == "POST": 
         if form.validate_on_submit() and "username" in request.form and "password" in request.form:
-            username = request.form["username"].encode('utf-8')
-            password = request.form["password"].encode('utf-8')
+            username = request.form["username"]
+            password = request.form["password"]
 
             #search for a user with the provided user name
             user = db_connect.get_db().fetch_user(userid=None, user_name = username)
             #if the user isnt found, hash the password and register the new user      
             if user.get('username') is None:
                 hashed_pass = hash_password(password)
-                new_id = db_connect.get_db().add_user(user_name = username, password = hashed_pass)
+                new_id = db_connect.get_db().add_user(user_name = request.form["username"], password = hashed_pass)
                 session['username'] = request.form['username']
                 return redirect(url_for('auth_blueprint.login')) # Redirect wants function name, not endpoint
             else:
