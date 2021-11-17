@@ -20,7 +20,6 @@ def get_db():
             flask.g.db = db.AppDB(client)
             for admin in config.get("admins", []):
                 flask.g.db.add_admin(userid=None, user_name=admin)
-            print("The DB is", flask.g.db)
         return flask.g.db
     except:
         logging.getLogger("db").error("Error occurred setting up database connection", exc_info=True)

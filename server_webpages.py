@@ -11,7 +11,6 @@ def is_authenticated():
     """
     Returns whether the user is logged in
     """
-    print("Authenticated:", server_auth.is_authenticated())
     return server_auth.is_authenticated()
     #return False
 

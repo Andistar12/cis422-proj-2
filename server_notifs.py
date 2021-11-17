@@ -4,6 +4,8 @@ import flask
 import pywebpush
 import json
 
+import config
+
 # The blueprint for Flask to load in the main server file
 blueprint = flask.Blueprint("notifs_blueprint", __name__)
 
@@ -16,8 +18,11 @@ def push_subscription():
     POST submits the subscription information to the system
     """
     if flask.request.method == "GET":
+        vapid_pub_key = config.get("vapid_public_key", "")
+        if vapid_pub_key == "":
+            return flask.Response(status=200, mimetype="application/json") # TODO something else
         return flask.Response(
-            response=json.dumps({"public_key": flask.current_app.vapid_public_key}),
+            response=json.dumps({"public_key": vapid_pub_key}),
             headers={"Access-Control-Allow-Origin": "*"},
             content_type="application/json"
         )
@@ -25,7 +30,7 @@ def push_subscription():
         subscription_token = flask.request.get_json().get("subscription_token", "")
         if subscription_token is not None and subscription_token != "":
             temp_subscriptions.append(subscription_token)
-        print("Subscriptions is", temp_subscriptions)
+        #print("Subscriptions is", temp_subscriptions)
         return flask.Response(status=200, mimetype="application/json")
 
 @blueprint.route("/push/test", methods=["POST"])
@@ -48,10 +53,16 @@ def send_web_push(subscription_information, message_body):
      - subscription_information: The end client subscription generated
      - message_body: The message string to send off
     """
+    vapid_email = config.get("vapid_email", "")
+    if vapid_email == "":
+        return
+    private_key = config.get("vapid_private_key", "")
+    if private_key == "":
+        return
+
     vapid_claims = {
-        "sub": f"mailto: {flask.current_app.vapid_email}"
+        "sub": f"mailto: {vapid_email}"
     }
-    private_key = flask.current_app.vapid_private_key
     print("Attempting to send message", message_body, "to", subscription_information)
     return pywebpush.webpush(
         subscription_info=subscription_information,
