@@ -83,15 +83,26 @@ def is_authenticated():
     """
     return flask_login.current_user.is_authenticated
 
+#@login_manager.user_loader
+#def user_loader(username):
+#    """
+#    Loads the user if they are logged in
+#    """
+#    return UserObject(username)
+#    #if "username" in session:
+#    #    return UserObject(session["username"])
+#    #return None
+
 @login_manager.user_loader
-def user_loader(username):
+def user_loader(username=None):
     """
     Loads the user if they are logged in
     """
+    if username is None:
+        if "username" in session:
+            return UserObject(session["username"])
+        return None
     return UserObject(username)
-    #if "username" in session:
-    #    return UserObject(session["username"])
-    #return None
 
 @blueprint.route("/register.html", methods=["GET", "POST"])
 def register():
