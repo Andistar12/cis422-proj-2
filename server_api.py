@@ -3,6 +3,7 @@
 import flask
 
 import db_connect
+import server_auth
 
 # The blueprint for Flask to load in the main server file
 blueprint = flask.Blueprint("api_blueprint", __name__)
@@ -63,7 +64,17 @@ def api_user_boards():
 
     On error, return a JSON with "error" set to the message
     """
-    pass # TODO
+    db = db_connect.get_db()
+    username = server_auth.user_loader()
+    if username is None:
+        return "Error: Could not find user"
+    user = db.fetch_user(None, username.username)
+    if not user:
+        return "Error: Could not find user"
+    print(user)
+    board_ids = user['subscriptions']
+    boards = [db.fetch_board(i) for i in board_ids]
+    return flask.jsonify(boards)
 
 @blueprint.route("/api/admins")
 def api_admins():
