@@ -83,26 +83,19 @@ def is_authenticated():
     """
     return flask_login.current_user.is_authenticated
 
-#@login_manager.user_loader
-#def user_loader(username):
-#    """
-#    Loads the user if they are logged in
-#    """
-#    return UserObject(username)
-#    #if "username" in session:
-#    #    return UserObject(session["username"])
-#    #return None
+def get_curr_username():
+    """
+    Fetches the username of the current user. Assumes they are already authenticated
+    """
+    return flask_login.current_user.get_id()
 
 @login_manager.user_loader
-def user_loader(username=None):
+def user_loader(username):
     """
-    Loads the user if they are logged in
+    Loads the user if they are logged in. This is only used internally by Flask-Login
     """
-    if username is None:
-        if "username" in session:
-            return UserObject(session["username"])
-        return None
     return UserObject(username)
+
 
 @blueprint.route("/register.html", methods=["GET", "POST"])
 def register():
