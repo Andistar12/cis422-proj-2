@@ -2,6 +2,8 @@
 
 import flask
 
+import db_connect
+
 # The blueprint for Flask to load in the main server file
 blueprint = flask.Blueprint("api_blueprint", __name__)
 
@@ -32,7 +34,12 @@ def api_boards():
 
     On error, return a JSON with "error" set to the message
     """
-    pass # TODO
+    db = db_connect.get_db() #fetch the db object
+    data = flask.request.args #fetch the arguments from the GET request
+    search = data['search'] #extract the search term and offset from the request
+    offset = int(data['offset'])
+    boards = db.fetch_boards(search, offset) #query database with keyword
+    return flask.jsonify(boards) #return a JSON of the boards
 
 
 @blueprint.route("/api/board/user")
