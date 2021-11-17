@@ -133,8 +133,8 @@ def login():
     if request.method == "POST":
         #checking for valid username and password field
         if form.validate_on_submit() and "username" in request.form and "password" in request.form:
-            username = request.form["username"].encode('utf-8')
-            password = request.form["password"].encode('utf-8')
+            username = request.form["username"]
+            password = request.form["password"]
             
             user = db_connect.get_db().fetch_user(userid=None, user_name = username)
             #if that username exits, checking the password for a match
