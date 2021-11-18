@@ -1,28 +1,38 @@
 
 function urlB64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
+    // Converts a VAPID key to an array of unit8 bytes
 
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
+    // Prep string
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
 
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
+	// Declare output
+	const rawData = window.atob(base64);
+  	const outputArray = new Uint8Array(rawData.length);
+
+	// Do conversion
+	for (let i = 0; i < rawData.length; ++i) {
+		outputArray[i] = rawData.charCodeAt(i);
+	}
+	return outputArray;
 }
 
-
+// Whether the user is currently subscribed
 let is_subscribed = false;
-let sw_reg = null;
 
+// Holds the service worker object
+let sw_reg = null;
 
 function update_button() {
     // Updates the push button to either enable or disable notifications
 
 	let push_button = document.getElementById("push-button");
+
+	if (sw_reg == null) {
+		// Push notifications not available
+		push_button.textContent = 'Notifications Not Supported';
+		return;
+	}
 
 	if (Notification.permission === 'denied') {
         // User rejected request
@@ -43,8 +53,8 @@ function update_button() {
 }
 
 
-function update_subscription_on_server(subscription) {
-	// Sends the subscription to the server
+function update_subscription_on_server(subscription, remove) {
+	// Sends the subscription to the server and whether to subscribe or unsubscribe
 
 	$.ajax({
 		type:"POST",
@@ -52,12 +62,13 @@ function update_subscription_on_server(subscription) {
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		async: true,
-		data: JSON.stringify({"subscription_token": subscription}),
+		data: JSON.stringify({"subscription_token": subscription, "subscribe": remove}),
 		success: function(response) {
-			console.log("Subscription accepted");
+			console.log("Subscription update accepted");
 		},
-		error: function(err) {
-			console.log("Server sent status " + err.status);
+		error: function(xhr) {
+			console.log("/push/subscription returned " + xhr.status);
+			console.log(xhr.responseJSON);
 		}
 	})
 }
@@ -77,8 +88,8 @@ function subscribe_user() {
 		})
 		.then(function(subscription) {
 			// Send subscription to server
-			console.log('User is subscribed.');
-			update_subscription_on_server(subscription);
+			console.log('User has been subscribed.');
+			update_subscription_on_server(subscription, true);
 			is_subscribed = true;
 			update_button();
 		})
@@ -94,16 +105,19 @@ function unsubscribe_user() {
 
 	sw_reg.pushManager.getSubscription()
 		.then(function(subscription) {
-			if (subscription) {
-				return subscription.unsubscribe();
-			}
+			// First notify server of unsubscription
+			if (subscription) update_subscription_on_server(subscription, false);
+			return subscription;
+		})
+		.then(function(subscription) {
+			// Then locally unsubscribe
+			if (subscription) subscription.unsubscribe();
 		})
 		.catch(function(error) {
 			console.log('Error unsubscribing', error);
 		})
 		.then(function() {
-			update_subscription_on_server(null);
-			console.log('User is unsubscribed.');
+			// Finally update UI
 			is_subscribed = false;
 			update_button();
 		});
@@ -129,9 +143,6 @@ function init_push() {
 	sw_reg.pushManager.getSubscription()
 		.then(function(subscription) {
 			is_subscribed = !(subscription === null);
-
-			//update_subscription_on_server(subscription);
-
 			if (is_subscribed) {
 				console.log('User IS subscribed.');
 			} else {
@@ -146,8 +157,12 @@ function init_push() {
 		type:"GET",
 		url: $SCRIPT_ROOT + "/push/subscription",
 		success: function(response) {
-			console.log("Subscription key response",response);
+			console.log("Subscription key successfully registered");
 			localStorage.setItem('applicationServerPublicKey',response.public_key);
+		},
+		error: function(xhr) {
+			console.log("/push/subscription returned " + xhr.status);
+			console.log(xhr.responseJSON);
 		}
 	})
 }
@@ -168,5 +183,5 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 	});
 } else {
 	console.warn('Push is not supported');
-	push_button.textContent = 'Notifications not supported';
+	update_button();
 }
