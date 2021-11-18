@@ -12,12 +12,11 @@ import server_notifs
 import config
 
 # Global variables
-
 app = flask.Flask(__name__)
 app.secret_key = config.get("secret_key", "super secret")
 app.debug = config.get("debug", True)
 
-# Hook into Gunicorn logger
+# Hook into Gunicorn logger (for production only)
 gunicorn_error_logger = logging.getLogger('gunicorn.error')
 app.logger.handlers.extend(gunicorn_error_logger.handlers)
 
@@ -26,7 +25,9 @@ app.register_blueprint(server_webpages.blueprint)
 app.register_blueprint(server_auth.blueprint)
 app.register_blueprint(server_api.blueprint)
 app.register_blueprint(server_notifs.blueprint)
-app.register_blueprint(db_connect.blueprint)
+
+# Register the teardown context for the database
+app.teardown_appcontext(db_connect.db_teardown)
 
 if __name__ == "__main__":
     # Run app

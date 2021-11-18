@@ -1,8 +1,16 @@
+"""
+Manages configuration (from file) for the entire project
+
+We handle config separately from the Flask app since it may be restarted
+or not exist across parallel worker threads
+"""
+
 import json
 import sys
 import os
 import logging
 
+# The config JSON
 config = None
 
 def init_config():
@@ -31,7 +39,14 @@ def init_config():
 def get(key, default):
     """
     Gets a parameter key from the configuration file, falling back to default if it does not exist
+
+    Parameters:
+     - key: the config key to look for
+     - default: what to return if the key is not found
+    Returns:
+     - The value associated with the key
     """
     if config is None:
+        # Read in the config
         init_config()
     return config.get(key, default)

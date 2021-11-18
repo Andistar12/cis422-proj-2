@@ -1,20 +1,27 @@
 # Handles user authentication and account creation
 
-import flask_login
-import flask
 
+# Import helper functions from Flask
+import flask
 from flask import render_template, request, session, redirect, url_for, flash
 
+# Import helper functions from passlib for password hashing
 from passlib.hash import sha256_crypt as pwd_context
 
+# Import helper functions from flask login for user auth
+import flask_login
 from flask_login import login_required, logout_user, UserMixin, fresh_login_required, login_user
 from flask_wtf import FlaskForm as Form
 from wtforms import BooleanField, StringField, validators
 
+# Import our modules
 import db_connect
 import config
    
 class LoginForm(Form):
+    """
+    Represents the login form object for form validation
+    """
     username = StringField('Username', [
         validators.Length(min=2, max=25,
         message=u"A little too short or long for a username."),
@@ -26,6 +33,9 @@ class LoginForm(Form):
     remember = BooleanField('Remember me')    
 
 class RegisterForm(Form):
+    """
+    Represents the registration form object for form validation
+    """
     username = StringField('Username', [
         validators.Length(min=2, max=25,
         message=u"A little too short or long for a username."),
@@ -36,12 +46,37 @@ class RegisterForm(Form):
         validators.InputRequired(u"Forget something?")])   
 
 def get_salt(base_string: str):
-    return base_string.replace(" ", "").zfill(16)
+    """
+    Fetches the hash salt to use for SHA256
+
+    Parameters:
+     - base_string: the base string to use as the salt
+    Returns:
+     - A 16 character salt
+    """
+    return base_string.replace(" ", "")[:16].zfill(16)
 
 def hash_password(password):
+    """
+    Hashes a given password using SHA256
+
+    Parameters:
+     - password: the cleartext password to hash
+    Returns:
+      - The newly hashed password
+    """
     return pwd_context.hash(password, salt=get_salt(config.get("secret_key", "super secret")))
 
 def verify_password(password, hashVal):
+    """
+    Verifies a password matches a given hash
+
+    Parameters:
+     - password: the password in cleartext to verify
+     - hashVal: The hashed password to verify against
+    Returns:
+     - Whether the passwords match
+    """
     return pwd_context.verify(password, hashVal)
 
 
@@ -49,18 +84,32 @@ def verify_password(password, hashVal):
 blueprint = flask.Blueprint("auth_blueprint", __name__)
 
 # The Flask login manager
+login_manager = flask_login.LoginManager()
+
 @blueprint.record_once
 def on_load(state):
+    """
+    Initiates the Flask app with the login manager
+    """
     login_manager.init_app(state.app)
 
 class UserObject(UserMixin):
+    """
+    Represents our user object for Flask-Login to track
+    """
+
     def __init__(self, username: str):
+        """
+        Initiates the user class with a username
+        """
         self.username = username
 
     def get_id(self):
+        """
+        Fetches the UserMixin ID, which we identify using the username
+        """
         return str(self.username)
 
-login_manager = flask_login.LoginManager()
 
 def is_admin():
     """
@@ -72,7 +121,10 @@ def is_admin():
 
     # get the list of current admins
     admins = db_connect.get_db().fetch_admins()
-    for admin in admins:
+    if len(admins) == 0:
+        return True # Decided that if no admins present, all users have admin privileges
+
+    for admin in admins: # Check all admins
         if flask_login.current_user.get_id() == admin["username"]:
             return True
     return False
@@ -95,7 +147,6 @@ def user_loader(username):
     Loads the user if they are logged in. This is only used internally by Flask-Login
     """
     return UserObject(username)
-
 
 @blueprint.route("/register.html", methods=["GET", "POST"])
 def register():
@@ -170,7 +221,3 @@ def logout():
     logout_user()
     flash("Logged out.")
     return redirect(url_for('pages_blueprint.index'))
-
-# # Run the application
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', debug=True)

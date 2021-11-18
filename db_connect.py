@@ -1,4 +1,9 @@
-# Handles connection to the database
+"""
+Manages the database connection to MongoDB
+
+We handle this connection separately from the Flask app since it may be restarted
+or not exist across parallel worker threads
+"""
 
 import flask
 import pymongo
@@ -7,23 +12,38 @@ import logging
 import db
 import config
 
-# The blueprint for Flask to load in the main server file
-blueprint = flask.Blueprint("db_connect_blueprint", __name__)
 
 def get_db():
     """
     Retrieves the AppDB instance in use by the Flask server
+
+    Returns:
+     - An AppDB instance representing the server connection, or None if the connection failed failed
     """
+    ctx = flask._app_ctx_stack.top
     try:
-        if 'db' not in flask.g:
-            client = pymongo.MongoClient(config.get("db_link", ""))
-            flask.g.db = db.AppDB(client)
-            for admin in config.get("admins", []):
-                flask.g.db.add_admin(userid=None, user_name=admin)
-        return flask.g.db
+        app_db_client = getattr(ctx, "app_db_client", None)
+        if app_db_client is None:
+            ctx.app_db_client = pymongo.MongoClient(config.get("db_link", ""))
+            ctx.app_db = db.AppDB(ctx.app_db_client)
+        return ctx.app_db
     except:
         logging.getLogger("db").error("Error occurred setting up database connection", exc_info=True)
-        flask.g.db = None
+        ctx.app_db_client = None
+        ctx.app_db = None
         return None
 
-# TODO add a teardown_appcontext to remove memory leak for db connection
+def db_teardown(error=None):
+    """
+    Closes the database connection when the app is torn down
+
+    Parameters:
+     - error: any error that caused the app to shut down
+    """
+    ctx = flask._app_ctx_stack.top
+    app_db_client = getattr(ctx, "app_db_client", None)
+    if app_db_client is not None:
+        logging.getLogger("db").info("Closing the db connection")
+        app_db_client.close()
+        ctx.app_db_client = None
+        ctx.app_db = None
