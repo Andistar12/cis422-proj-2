@@ -5,7 +5,7 @@ The database has a number of MongoDB collections:
  - users: contains information about users
  - admins: contains information about system administrators
  - boards: contains information about boards
- - posts: contains posts and comments
+ - comments: contains posts id and comments
 
 In the users collection, each user entry has the following form:
 {   "_id": id of user
@@ -13,6 +13,7 @@ In the users collection, each user entry has the following form:
     "password": hashed password of the user
     "subscriptions": list of board IDs
     "admin": whether the user is an administrator
+    "notification": info about the user's notification
     "last_active_date": last active date
     "boards_owned": the board id of the board that the user made
     "posts_owned": the posts id of the post that the user posted
@@ -21,7 +22,7 @@ In the users collection, each user entry has the following form:
 
 In the admins collection, each admin entry has the following form:
 {
-    "_id": id of admins
+    "_id": id of admins collection
     "username": username of the admin. This is the unique identifier for the administrator
     "userid": userid of the admins
 }
@@ -37,7 +38,7 @@ In the boards collection, each board entry has the following form:
     "board_vote_threshold": the percentage of community required for vote
     "board_owner": owner id of the board
     "last_active_date": last active date
-    "posts_id": array of id of the posts
+    "board_posts": actual posts without comments
 
 
 }
@@ -45,7 +46,6 @@ In the boards collection, each board entry has the following form:
 In a particular board's collection, each entry is a post which has the following form:
 {
     "_id": unique ID of the board
-    "board_id": the id of the board it belongs to
     "post_subject": subject of the post
     "post_description": description of the post
     "post_owner": owner id of the post
@@ -53,9 +53,16 @@ In a particular board's collection, each entry is a post which has the following
     "post_upvotes": number of upvotes on the post
     "post_upvoters": list of user IDs who voted on the post
     "post_notified": whether the post notification has already been triggered
-    "post_comments": list of comments dictionaries
+    "comments_container": contariner id in which the container stores the comments
     "last_active_date": last active date
 
+}
+
+container Level (in comments collection):
+{
+    "_id": id used by the comment collection (container id)
+    "post_id": id of the post of the comments they belong to
+    "comments": actual comments
 }
 
 Comments has the following form:
@@ -92,8 +99,6 @@ class AppDB:
         """
         self.client = client
         self.db=self.client.p2_db
-
-
 
 
     def fetch_user(self, userid: ObjectId, user_name: str ):
@@ -139,6 +144,7 @@ class AppDB:
                          "password":password,
                          "subscriptions":[],
                          "admin":0,
+                         "notification":[],
                          "last_active_date":None,
                          "boards_owned":[],
                          "posts_owned":[]})
@@ -173,6 +179,27 @@ class AppDB:
         else:
             return None
 
+    def add_notification(self, userid: ObjectId, user_name: str, notification: dict):
+        """
+
+         Parameters:
+                 - userid: the id of the user
+                 - username: the username of the administrator
+                NOTE: use only userid or username, pass "None" to unused parameters!
+                Return: user id of notification info added
+                Error: return None
+        """
+        user = self.db.users
+        if userid==None:
+            filter={"username":user_name}
+        else:
+            filter={"_id":userid}
+        theuser=user.find_one(filter)
+        if theuser!=None:
+            user.update_one(filter,{"$push":{"notification":notification}})
+            return theuser["_id"]
+        else:
+            return None
 
     def add_admin(self, userid: ObjectId, user_name: str):
         """
@@ -239,14 +266,14 @@ class AppDB:
         Parameters:
          - None
          Returns:
-         - An array of dictionaries, each dictionary containing information about an administrator
+         - An array of dictionaries containing information about administrators
          Error: return empty array
         """
         admin=self.db.admins
         return list(admin.find())
 
 
-    def fetch_boards(self, keyword: str, offset: int):
+    def fetch_boards(self, keyword: str, offset: int, include_posts: bool):
         """
         Returns up to 50 boards. The ordering of the boards may be catered to the user
         - Posts are not included
@@ -254,14 +281,19 @@ class AppDB:
          - keyword: a search string to filter results by
          - offset: offset into board results. For example, an offset of 1 will
                     return boards 50 through 99
+         -include_post: option to include posts
         Returns:
          - An array of dictionaries, each dictionary containing information about a board
         Error: return empty array
         """
         board=self.db.boards
         regx=re.compile(keyword,re.IGNORECASE)
-        array=list(board.find({"$or":[{"board_name":regx},
-                        {"board_description":regx}]}))
+        if include_posts:
+            array = list(board.find({"$or": [{"board_name": regx},
+                                             {"board_description": regx}]}))
+        else:
+            array=list(board.find({"$or":[{"board_name":regx},
+                                            {"board_description":regx}]},{"board_posts":-1}))
 
         return array[offset*50:(offset+1)*50]
 
@@ -281,6 +313,7 @@ class AppDB:
         filter = {"_id": boardid}
         val = board.find_one(filter)
         if val != None:
+            board.update_one(filter, {"$push": {"board_posts": {"$each": [], "$sort": {"post_upvotes": -1}}}})
             return board.find_one(filter)
         else:
             return {}
@@ -321,7 +354,7 @@ class AppDB:
                                 "board_vote_threshold":vote_threshold,
                                 "board_owner":theowner["_id"],
                                 "last_active_date":None,
-                                "posts_id":[]})
+                                "board_posts":[]})
 
                 board_id=board.find_one({"board_name":boardname})["_id"]
                 user.update_one(filter, {"$push": {"boards_owned":board_id}})
@@ -347,7 +380,7 @@ class AppDB:
         board = self.db.boards
         user=self.db.users
         admin=self.db.admins
-        post=self.db.posts
+        comment=self.db.comments
         filter={"_id":boardid}
         val=board.find_one(filter)
         if val != None:
@@ -358,11 +391,13 @@ class AppDB:
             if (id==val["board_owner"]) or (admin.find_one({"userid":id})!=None):
                 board.delete_one(filter)
                 member = val["board_members"]
-                posts=val["posts_id"]
+                posts=val["board_posts"]
+                for post in posts:
+                    comment.delete_one({"_id":post["comments_container"]})
+
                 for uid in member:
                     user.update_one({"_id": uid}, {"$pull": {"subscriptions": val["_id"]}})
-                for pid in posts:
-                    post.delete_one({"_id":pid})
+
                 user.update_one({"_id":val["board_owner"]},{"$pull":{"boards_owned":val["_id"]}})
                 return val["_id"]
         else:
@@ -444,11 +479,11 @@ class AppDB:
         else:
             return None
 
-    def fetch_post(self,  post_id: ObjectId):
+    def fetch_post(self, boardid: ObjectId, post_id: ObjectId):
         """
         Fetches all information about a single post.
 
-        Comments will be sorted by upvote in descreasing order.
+        NOTE: Doesn't contain comments! Call "fetch_comments()" to get sorted comments!
 
         Parameters:
          - board_id: the ID of the board the post belongs under
@@ -461,41 +496,17 @@ class AppDB:
         Error:return empty dictionary
         """
 
-        post = self.db.posts
-
-        thepost=post.find_one({"_id":post_id})
+        board=self.db.boards
+        thepost=board.find_one({"_id":boardid, "board_posts._id":post_id})
 
         if (thepost!=None) :
-            post.update_one({"_id":post_id}, {"$push": {"post_comments": {"$each": [], "$sort": {"comment_upvotes": -1}}}})
-            return post.find_one({"_id":post_id})
+            return board.find_one({"_id":boardid, "board_posts._id":post_id},{"board_post.$":1})
         else:
             return {}
 
-    def fetch_posts(self, board_id: ObjectId):
-        """
-        Fetches all information about posts in a board
 
-        posts will be sorted by upvote in descreasing order.
 
-        Parameters:
-         - board_id: the ID of the board the post belongs under
-
-        Returns:
-         -  An array of dictionaries of posts
-        Error:return empty array
-        """
-        board = self.db.boards
-        post = self.db.posts
-        b_filter = {"_id": board_id}
-
-        theboard=board.find_one(b_filter)
-        if  (theboard!=None):
-            return list(post.find({"board_id": theboard["_id"]}).sort("post_upvotes",pymongo.DESCENDING))
-
-        else:
-            return []
-
-    def create_post(self, ownerid: ObjectId, owner: str, board_id: ObjectId,  subject: str, description: str):
+    def create_post(self, ownerid: ObjectId, owner: str, boardid: ObjectId,  subject: str, description: str):
         """
         Creates a post
 
@@ -516,8 +527,8 @@ class AppDB:
         """
         user=self.db.users
         board=self.db.boards
-        post=self.db.posts
-        b_filter={"_id":board_id}
+        comment=self.db.comments
+        b_filter={"_id":boardid}
         if ownerid==None:
             o_filter={"username":owner}
         else:
@@ -525,25 +536,28 @@ class AppDB:
         theowner=user.find_one(o_filter)
         theboard=board.find_one(b_filter)
         if (theowner!=None) and (theboard!=None) and (theboard["_id"] in theowner["subscriptions"]):
+            post_id = ObjectId()
+            comment.insert_one({"post_id": post_id,
+                                "comments": []})
+            container_id=comment.find_one({"post_id": post_id})["_id"]
+            board.update_one(b_filter,{"$push":{"board_posts":{"_id":post_id,
+                                                        "post_subject":subject,
+                                                        "post_description":description,
+                                                        "post_owner":theowner["_id"],
+                                                        "post_date":datetime.datetime.now(),
+                                                        "post_upvotes":0,
+                                                        "post_upvoters":[],
+                                                        "post_notified":0,
+                                                        "comments_container":container_id,
+                                                        "last_active_date":None}}})
 
-            post.insert_one({"board_id":theboard["_id"],
-                             "post_subject":subject,
-                             "post_description":description,
-                             "post_owner":theowner["_id"],
-                             "post_date":datetime.datetime.now(),
-                             "post_upvotes":0,
-                             "post_upvoters":[],
-                             "post_notified":0,
-                             "post_comments":[],
-                             "last_active_date":None})
 
-            post_id=post.find_one({"board_id":theboard["_id"]})["_id"]
             user.update_one({"_id":theowner["_id"]},{"$push":{"posts_owned":post_id}})
             return post_id
         else:
             return None
 
-    def delete_post(self, operator_id: ObjectId, operator: str,  post_id: ObjectId):
+    def delete_post(self, operator_id: ObjectId, operator: str,  boardid: ObjectId, post_id: ObjectId):
         """
         Deletes a post.
 
@@ -558,26 +572,27 @@ class AppDB:
          Error: return None
         """
         user = self.db.users
-
+        board=self.db.boards
         admin=self.db.admins
-        post=self.db.posts
-
+        comment=self.db.comments
+        p_filter={"_id":boardid,"board_posts._id":post_id}
         if operator_id == None:
             o_filter = {"username": operator}
 
         else:
             o_filter = {"_id": operator_id}
         theowner = user.find_one(o_filter)
-        thepost = post.find_one({"_id":post_id})
+        thepost = board.find_one(p_filter)
         if ((theowner["_id"] ==thepost["post_owner"]) or (admin.find_one({"userid":theowner["_id"]})!=None)) and (thepost != None):
-                post.delete_one({"_id":post_id})
-                post.update_one({"_id":thepost["board_id"]},{"$pull":{"posts_id":post_id}})
-                user.update_one({"_id":thepost["post_owner"]},{"pull":{"posts_owned":post_id}})
+
+                board.update_one(p_filter,{"$pull":{"board_posts":{"_id":post_id}}})
+                user.update_one({"_id":thepost["post_owner"]},{"$pull":{"posts_owned":post_id}})
+                comment.delete_one({"post_id":post_id})
                 return post_id
         else:
             return None
 
-    def upvote_post(self, upvoterid: ObjectId, upvoter: str, post_id: ObjectId):
+    def upvote_post(self, upvoterid: ObjectId, upvoter: str, boardid: ObjectId, post_id: ObjectId):
         """
         Upvotes a post. Rescinds the upvote if the user already upvoted it.
 
@@ -591,17 +606,17 @@ class AppDB:
          Error: Return None
         """
         user = self.db.users
-        post=self.db.posts
-
+        board=self.db.boards
+        p_filter={"_id":boardid,"board_posts._id":post_id}
         if upvoterid == None:
             u_filter = {"username": upvoter}
         else:
             u_filter = {"_id": upvoterid}
-        thepost = post.find_one({"_id":post_id})
+        thepost = board.find_one(p_filter)
         theupvoter = user.find_one(u_filter)
         if (theupvoter != None) and (thepost != None) and (thepost["post_notified"]==0) and (theupvoter["_id"] not in thepost["post_upvoters"]):
-            post.update_one({"_id":post_id}, {"$push":{"post_upvoters":theupvoter["_id"]}})
-            post.update_one({"_id": post_id}, {"$inc": {"post_upvotes": 1}})
+            board.update_one(p_filter, {"$push":{"board_posts.$.post_upvoters":theupvoter["_id"]}})
+            board.update_one(p_filter, {"$inc": {"board_posts.$.post_upvotes": 1}})
             return post_id
         else:
             return None
@@ -619,7 +634,7 @@ class AppDB:
         """
         pass  # TODO
 
-    def add_comment(self, ownerid: ObjectId, owner: str,  post_id: ObjectId,  message: str):
+    def add_comment(self, ownerid: ObjectId, owner: str,  boardid: ObjectId, post_id: ObjectId,  message: str):
         """
         Adds a comment to a post.
 
@@ -635,16 +650,18 @@ class AppDB:
          Error: return None
         """
         user = self.db.users
-        post=self.db.posts
+        comment=self.db.comments
+        board=self.db.boards
+        b_filter={"_id":boardid,"board_posts._id":post_id}
         if ownerid == None:
             o_filter = {"username": owner}
         else:
             o_filter = {"_id": ownerid}
         theowner = user.find_one(o_filter)
-        thepost = post.find_one({"_id":post_id})
+        thepost = board.find_one(b_filter)
         if (theowner != None) and (thepost != None):
             comment_id=ObjectId()
-            post.update_one({"_id":post_id}, {"$push": {"post_comments":
+            comment.update_one({"_id":post_id}, {"$push": {"comments":
                                                                 {"_id":comment_id,
                                                                 "comment_owner":theowner["_id"],
                                                                 "comment_message":message,
@@ -674,18 +691,18 @@ class AppDB:
 
         user = self.db.users
         admin = self.db.admins
-        post = self.db.posts
-
+        comment=self.db.comments
+        c_filter={"post_id":post_id,"comments._id":comment_id }
         if operator_id == None:
             o_filter = {"username": operator}
 
         else:
             o_filter = {"_id": operator_id}
         # theowner = user.find_one(o_filter)
-        thecomment = post.find_one({"_id":post_id,"post_comments._id":comment_id })
+        thecomment = comment.find_one(c_filter)
         if (thecomment!=None) :
-            # check owner: to be implemented
-            post.update_one({"_id":post_id }, {"$pull":{"post_comments":{"_id":comment_id}}})
+
+            comment.update_one(c_filter, {"$pull":{"comments":{"_id":comment_id}}})
 
             return comment_id
         else:
@@ -707,31 +724,42 @@ class AppDB:
         """
         user = self.db.users
         board = self.db.boards
-        post=self.db.posts
+        comment=self.db.comments
+        c_filter={"_id":post_id,"comments._id":comment_id}
         if upvoterid == None:
             u_filter = {"username": upvoter}
         else:
             u_filter = {"_id": upvoterid}
-        thecomment = post.find_one({"_id":post_id,"post_comments._id":comment_id})
+        thecomment = comment.find_one(c_filter)
         theupvoter = user.find_one(u_filter)
-        if (theupvoter != None) and (thecomment != None) and ():
-            post.update_one({"_id":post_id,"post_comments._id":comment_id},{"$push":{"post_comments.$.comment_upvoters":theupvoter["_id"]}})
-            post.update_one({"_id":post_id,"post_comments._id":comment_id},{"$inc": {"post_comments.$.comment_upvotes": 1}})
+        if (theupvoter != None) and (thecomment != None):
+            comment.update_one(c_filter,{"$push":{"comments.$.comment_upvoters":theupvoter["_id"]}})
+            comment.update_one(c_filter,{"$inc": {"comments.$.comment_upvotes": 1}})
             return comment_id
         else:
             return None
 
+    def fetch_comments(self, post_id: ObjectId):
+        comment=self.db.comments
+        c_filter={"post_id":post_id}
+        thecomment=comment.find_one(c_filter)
+        if thecomment!=None:
+            comment.update_one(c_filter,{"$push": {"comments": {"$each": [], "$sort": {"comment_upvotes": -1}}}})
+            return comment.find_one(c_filter)["comments"]
+        else:
+            return None
 
-    def notify_post(self,  post_id: ObjectId):
+    def notify_post(self, boardid: ObjectId, post_id: ObjectId):
         user = self.db.users
 
-        post = self.db.posts
+        board=self.db.boards
 
-        thepost = post.find_one({"_id": post_id})
+        p_filter={"_id": boardid, "board_posts._id":post_id}
+        thepost = board.find_one(p_filter)
 
         if  (thepost != None):
-            post.update_one({"_id": post_id}, {"$set": {"post_notified": 1}})
-            post.update_one({"_id": post_id}, {"$set": {"post_upvotes": float("inf")}})
+            board.update_one(p_filter, {"$set": {"board_post.$.post_notified": 1}})
+            board.update_one(p_filter, {"$set": {"board_post.$.post_upvotes": float("inf")}})
             return post_id
         else:
             return None
