@@ -1,6 +1,8 @@
 # Sets up the endpoints for interacting with the database (fetching boards, posts, comments)
 
 import flask
+import flask_restful
+from flask import Response
 
 import db_connect
 import server_auth
@@ -72,14 +74,12 @@ def api_user_boards():
 
     On error, return a JSON with "error" set to the message
     """
+    if not server_auth.is_authenticated():
+        return flask.Response({"error": "Must be logged in to fetch boards"}, status=403)
     db = db_connect.get_db()
-    username = server_auth.user_loader()
-    if username is None:
-        return "Error: Could not find user"
-    user = db.fetch_user(None, username.username)
-    if not user:
-        return "Error: Could not find user"
-    print(user)
+    username = server_auth.get_curr_username()
+    if username is None or not (user := db.fetch_user(None, username)):
+        return flask.Response({"error": "Could not find user"}, status=404)
     board_ids = user['subscriptions']
     boards = [db.fetch_board(i) for i in board_ids]
     return flask.jsonify(boards)
@@ -98,7 +98,12 @@ def api_admins():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if server_auth.is_admin():
+        db = db_connect.get_db()
+        admins = db.fetch_admins()
+        admins = [i['username'] for i in admins]
+        return flask.jsonify(admins)
+    return Response({"error": "User must be an admin to request admins"}, status=403)
 
 @blueprint.route("/api/admins/add", methods=["POST"])
 def api_admins_add():
@@ -114,7 +119,15 @@ def api_admins_add():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if server_auth.is_admin():
+        db = db_connect.get_db()
+        username = flask.request.form['username']
+        ret = db.add_admin(None, username)
+        if ret is None:
+            return {'error': 'Could not find user %s' % username}, 404
+        else:
+            return Response(status=200)
+    return {'error': 'User must be an admin to add an admin'}, 403
 
 @blueprint.route("/api/admins/remove", methods=["POST"])
 def api_admins_remove():
