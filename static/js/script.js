@@ -44,6 +44,8 @@ function fetch_user_boards(success, error) {
     });
 }
 
+//returns a list of administrator account names
+//only succeeds if called by an admin
 function fetch_admins(success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
@@ -59,6 +61,8 @@ function fetch_admins(success, error) {
     });
 }
 
+//adds an existing account as an administrator
+//only succeeds if called by an admin
 function add_admin(username, success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
@@ -76,6 +80,8 @@ function add_admin(username, success, error) {
     });
 }
 
+//removes an account from the administrator list
+//only works if called by an admin
 function remove_admin(username, success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
@@ -85,6 +91,24 @@ function remove_admin(username, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/admins/remove",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+//fetches information about a specific board
+function fetch_board(board_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    data = {board_id: board_id};
+    //send GET request to server with parameter
+    jQuery.ajax({
+        type: "GET",
+        url: $SCRIPT_ROOT + "/api/board",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: data,

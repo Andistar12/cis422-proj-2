@@ -6,6 +6,7 @@ from flask import Response
 
 import db_connect
 import server_auth
+from bson.objectid import ObjectId
 
 # The blueprint for Flask to load in the main server file
 blueprint = flask.Blueprint("api_blueprint", __name__)
@@ -143,7 +144,15 @@ def api_admins_remove():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if server_auth.is_admin():
+        db = db_connect.get_db()
+        username = flask.request.form['username']
+        ret = db.remove_admin(None, username)
+        if ret is None:
+            return {'error': 'Could not find user %s' % username}, 404
+        else:
+            return Response(status=200)
+    return {'error': 'User must be an admin to remove an admin'}, 403
 
 @blueprint.route("/api/board")
 def api_board():
@@ -179,7 +188,30 @@ def api_board():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    db = db_connect.get_db()
+    board_id = flask.request.args["board_id"]
+    obj = db.fetch_board(board_id)
+    if not obj:
+        return {'error': 'Could not find board %s' % board_id}, 404
+    username = server_auth.get_curr_username()
+    user = db.fetch_user(None, username)
+    if not user:
+        subscribed = False
+    else:
+        subs = user['subscriptions']
+        subscribed = board_id in subs
+    posts = []
+    board = {
+        'board_id': obj['_id'],
+        'board_name': obj['board_name'],
+        'board_description': obj['board_description'],
+        'board_date': obj['board_date'],
+        'board_vote_threshold': obj['board_vote_threshold'],
+        'board_member_count': obj['board_member_count'],
+        "subscribed": subscribed,
+        "posts": posts
+    }
+    return flask.jsonify(board)
 
 @blueprint.route("/api/board/create", methods=["POST"])
 def api_board_add():
