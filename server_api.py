@@ -6,6 +6,8 @@ from flask import Response
 
 import db_connect
 import server_auth
+import bson
+from bson import json_util
 from bson.objectid import ObjectId
 
 # The blueprint for Flask to load in the main server file
@@ -50,8 +52,8 @@ def api_boards():
     data = flask.request.args #fetch the arguments from the GET request
     search = data['search'] #extract the search term and offset from the request
     offset = int(data['offset'])
-    boards = db.fetch_boards(search, offset) #query database with keyword
-    return flask.jsonify(boards) #return a JSON of the boards
+    boards = db.fetch_boards(search, offset, False) #query database with keyword
+    return json_util.dumps(boards) # Return a JSON (using BSON decoder) of the boards
 
 
 @blueprint.route("/api/board/user")
