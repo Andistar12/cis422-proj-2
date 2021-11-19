@@ -143,11 +143,13 @@ function init_push() {
 	sw_reg.pushManager.getSubscription()
 		.then(function(subscription) {
 			is_subscribed = !(subscription === null);
+			/*
 			if (is_subscribed) {
-				console.log('User IS subscribed.');
+				console.log('User IS subscribed to push notifications.');
 			} else {
-				console.log('User is NOT subscribed.');
+				console.log('User is NOT subscribed to push notifications.');
 			}
+			 */
 
 			update_button();
 		});
@@ -157,7 +159,7 @@ function init_push() {
 		type:"GET",
 		url: $SCRIPT_ROOT + "/push/subscription",
 		success: function(response) {
-			console.log("Subscription key successfully registered");
+			//console.log("Subscription key successfully registered");
 			localStorage.setItem('applicationServerPublicKey',response.public_key);
 		},
 		error: function(xhr) {

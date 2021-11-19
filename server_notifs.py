@@ -128,13 +128,12 @@ def send_web_push(subscription_information, message_body, vapid_email, private_k
      - vapid_email: The email of the VAPID key
      - private_key: The private VAPID key
     """
-    vapid_claims = {
-        "sub": f"mailto: {vapid_email}"
-    }
-    print("Attempting to send message", message_body, "to", subscription_information)
+    #print("Attempting to send message", message_body, "to", subscription_information)
     return pywebpush.webpush(
         subscription_info=subscription_information,
         data=message_body,
         vapid_private_key=private_key,
-        vapid_claims=vapid_claims
+        vapid_claims={
+            "sub": f"mailto: {vapid_email}"
+        }
     )
