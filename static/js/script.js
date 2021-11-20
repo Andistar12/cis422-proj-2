@@ -124,11 +124,27 @@ function create_board(name, description, threshold, success, error) {
         board_name: name,
         board_description: description,
         board_vote_threshold: threshold
-    }
+    };
     //send POST request to server with parameter
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/board/create",
+        dataType: "json",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+function subscribe_board(id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {board_id: id};
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/board/subscribe",
         dataType: "json",
         data: data,
         success: success,

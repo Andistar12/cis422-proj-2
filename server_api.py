@@ -184,7 +184,7 @@ def api_board():
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
     db = db_connect.get_db()
-    board_id = flask.request.args["board_id"]
+    board_id = ObjectId(flask.request.args["board_id"])
     obj = db.fetch_board(board_id)
     if not obj:
         return {'error': 'Could not find board %s' % board_id}, 404
@@ -253,7 +253,17 @@ def api_board_subscribe():
 
     On error, return a JSON with "error" set to the message
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to subscribe to board'}, 403
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.subscribe_board(None, username, board_id)
+    if ret is None:
+        return {'error': 'Could not subscribe to board'}, 404
+    return Response(status=200)
+
 
 @blueprint.route("/api/board/delete", methods=["POST"])
 def api_board_delete():
