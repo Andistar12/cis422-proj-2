@@ -181,3 +181,41 @@ function delete_board(id, success, error) {
         error: error
     });
 }
+
+//fetches information about a specific post
+function fetch_post(board_id, post_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {board_id: board_id, post_id: post_id};
+    //send GET request to server with parameter
+    jQuery.ajax({
+        type: "GET",
+        url: $SCRIPT_ROOT + "/api/post",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+//creates a new post in the given board with the given subject and description
+function create_post(board_id, subject, description, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        board_id: board_id,
+        post_subject: subject,
+        post_description: description
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/post/create",
+        data: data,
+        success: success,
+        error: error
+    });
+}

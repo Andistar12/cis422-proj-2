@@ -347,6 +347,7 @@ def api_post():
     Fetches information about a post.
 
     GET request takes in the following parameters:
+    "board_id": string, unique ID of the post's board
     "post_id": string, unique ID of the post
 
     Returns the following payload:
@@ -371,7 +372,24 @@ def api_post():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    args = flask.request.args
+    board_id = ObjectId(args['board_id'])
+    post_id = ObjectId(args['post_id'])
+    db = db_connect.get_db()
+    obj = db.fetch_post(board_id, post_id)
+    if not obj:
+        return {'error': 'Could not find post'}, 404
+    comments = db.fetch_comments(post_id)
+    post = {
+        'post_id': str(obj['_id']),
+        'post_subject': obj['post_subject'],
+        "post_username": str(obj['post_owner']),
+        "post_date": str(obj['post_date']),
+        "post_upvotes": obj['post_upvotes'],
+        "post_comments": comments
+    }
+    print(post)
+    return flask.jsonify(post)
 
 @blueprint.route("/api/post/create", methods=["POST"])
 def api_post_create():
@@ -394,7 +412,21 @@ def api_post_create():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to create a post'}, 403
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    user = db.fetch_user(None, username)
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    subject = form['post_subject']
+    description = form['post_description']
+    if board_id not in user['subscriptions']:
+        return {'error': 'Must be subscribed to post to board'}, 403
+    ret = db.create_post(None, username, board_id, subject, description)
+    if not ret:
+        return {'error': 'Could not create post'}, 404
+    return flask.jsonify({'post_id': str(ret)})
 
 @blueprint.route("/api/post/delete", methods=["POST"])
 def api_post_delete():
