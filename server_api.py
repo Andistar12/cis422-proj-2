@@ -279,7 +279,16 @@ def api_board_delete():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_admin():
+        return {'error': 'Must be an admin to delete a board'}, 403
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    db = db_connect.get_db()
+    username = server_auth.get_curr_username()
+    ret = db.delete_board(None, username, board_id)
+    if ret is None:
+        return {'error': 'Could not delete board'}, 404
+    return Response(status=200)
 
 @blueprint.route("/api/board/purge", methods=["POST"])
 def api_board_purge():

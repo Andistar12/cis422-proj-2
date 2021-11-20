@@ -72,7 +72,6 @@ function add_admin(username, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/admins/add",
-        dataType: "json",
         data: data,
         success: success,
         error: error
@@ -90,7 +89,6 @@ function remove_admin(username, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/admins/remove",
-        dataType: "json",
         data: data,
         success: success,
         error: error
@@ -129,13 +127,13 @@ function create_board(name, description, threshold, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/board/create",
-        dataType: "json",
         data: data,
         success: success,
         error: error
     });
 }
 
+//subscribes the current user to a board with the given id
 function subscribe_board(id, success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
@@ -145,7 +143,23 @@ function subscribe_board(id, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/board/subscribe",
-        dataType: "json",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+//deletes the given board
+//must be an administrator to delete a board
+function delete_board(id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {board_id: id};
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/board/delete",
         data: data,
         success: success,
         error: error
