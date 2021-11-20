@@ -41,13 +41,6 @@ def api_boards():
     On error, return a JSON with "error" set to the message
     """
 
-    # Example code demonstrating get curr username
-    if server_auth.is_authenticated():
-        print("User is:", server_auth.get_curr_username())
-        print("User is admin:", server_auth.is_admin())
-    else:
-        print("User is not authorized")
-
     db = db_connect.get_db() #fetch the db object
     data = flask.request.args #fetch the arguments from the GET request
     search = data['search'] #extract the search term and offset from the request
@@ -204,10 +197,10 @@ def api_board():
         subscribed = board_id in subs
     posts = []
     board = {
-        'board_id': obj['_id'],
+        'board_id': str(obj['_id']),
         'board_name': obj['board_name'],
         'board_description': obj['board_description'],
-        'board_date': obj['board_date'],
+        'board_date': str(obj['board_date']),
         'board_vote_threshold': obj['board_vote_threshold'],
         'board_member_count': obj['board_member_count'],
         "subscribed": subscribed,
