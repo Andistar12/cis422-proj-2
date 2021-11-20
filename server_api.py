@@ -77,7 +77,19 @@ def api_user_boards():
     if username is None or not (user := db.fetch_user(None, username)):
         return flask.Response({"error": "Could not find user"}, status=404)
     board_ids = user['subscriptions']
-    boards = [db.fetch_board(i) for i in board_ids]
+    boards = []
+    for i in board_ids:
+        obj = db.fetch_board(i)
+        board = {
+            'board_id': str(obj['_id']),
+            'board_name': obj['board_name'],
+            'board_description': obj['board_description'],
+            'board_date': str(obj['board_date']),
+            'board_member_count': obj['board_member_count'],
+            'board_vote_threshold': obj['board_vote_threshold'],
+            "subscribed": True
+        }
+        boards.append(board)
     return flask.jsonify(boards)
 
 @blueprint.route("/api/admins")
@@ -244,7 +256,7 @@ def api_board_add():
 @blueprint.route("/api/board/subscribe", methods=["POST"])
 def api_board_subscribe():
     """
-    Subscribes a user to a board. Unsubscribes if the user is subscribed.
+    Subscribes a user to a board.
 
     POST requests takes in the following payload:
     {
@@ -260,6 +272,29 @@ def api_board_subscribe():
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.subscribe_board(None, username, board_id)
+    if ret is None:
+        return {'error': 'Could not subscribe to board'}, 404
+    return Response(status=200)
+
+@blueprint.route("/api/board/unsubscribe", methods=["POST"])
+def api_board_unsubscribe():
+    """
+    Unsubscribes a user from a board.
+
+    POST requests takes in the following payload:
+    {
+        "board_id": the board to subscribe to
+    }
+
+    On error, return a JSON with "error" set to the message
+    """
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to unsubscribe from board'}, 403
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.unsubscribe_board(None, username, board_id)
     if ret is None:
         return {'error': 'Could not subscribe to board'}, 404
     return Response(status=200)
