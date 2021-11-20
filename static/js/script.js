@@ -114,3 +114,24 @@ function fetch_board(board_id, success, error) {
         error: error
     });
 }
+
+//creates a new board with the given name, description, and threshold
+function create_board(name, description, threshold, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        board_name: name,
+        board_description: description,
+        board_vote_threshold: threshold
+    }
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/board/create",
+        dataType: "json",
+        data: data,
+        success: success,
+        error: error
+    });
+}

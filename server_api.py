@@ -227,7 +227,19 @@ def api_board_add():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to create board'}, 403
+    form = flask.request.form
+    name = form['board_name']
+    desc = form['board_description']
+    threshold = form['board_vote_threshold']
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    val = db.create_board(None, username, name, desc, threshold)
+    if val is None:
+        return {'error': 'Could not create board'}, 404
+    ret = {'board_id': str(val)}
+    return flask.jsonify(ret)
 
 @blueprint.route("/api/board/subscribe", methods=["POST"])
 def api_board_subscribe():
