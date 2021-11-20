@@ -201,6 +201,28 @@ class AppDB:
         else:
             return None
 
+    def remove_notification(self, userid: ObjectId, user_name: str, notification: dict):
+        """
+
+         Parameters:
+                 - userid: the id of the user
+                 - username: the username of the administrator
+                NOTE: use only userid or username, pass "None" to unused parameters!
+                Return: user id of notification info added
+                Error: return None
+        """
+        user = self.db.users
+        if userid==None:
+            filter={"username":user_name}
+        else:
+            filter={"_id":userid}
+        theuser=user.find_one(filter)
+        if theuser!=None:
+            user.update_one(filter,{"$pull":{"notification":notification}})
+            return theuser["_id"]
+        else:
+            return None
+
     def add_admin(self, userid: ObjectId, user_name: str):
         """
         Adds an administrator to the system. This has no effect if the user is already an administrator
