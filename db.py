@@ -14,6 +14,7 @@ In the users collection, each user entry has the following form:
     "subscriptions": list of board IDs
     "admin": whether the user is an administrator
     "notification": info about the user's notification
+    "user_date": creation date of user
     "last_active_date": last active date
     "boards_owned": the board id of the board that the user made
     "posts_owned": the posts id of the post that the user posted
@@ -39,6 +40,7 @@ In the boards collection, each board entry has the following form:
     "board_owner": owner id of the board
     "last_active_date": last active date
     "board_posts": actual posts without comments
+    "finished_posts": past notified posts
 
 
 }
@@ -78,8 +80,9 @@ Comments has the following form:
 """
 
 import pymongo
-import datetime
 import re
+import datetime
+from datetime import timedelta
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
@@ -145,6 +148,7 @@ class AppDB:
                          "subscriptions":[],
                          "admin":0,
                          "notification":[],
+                         "user_date":datetime.datetime.now(),
                          "last_active_date":None,
                          "boards_owned":[],
                          "posts_owned":[]})
@@ -203,7 +207,6 @@ class AppDB:
 
     def remove_notification(self, userid: ObjectId, user_name: str, notification: dict):
         """
-
          Parameters:
                  - userid: the id of the user
                  - username: the username of the administrator
@@ -212,13 +215,13 @@ class AppDB:
                 Error: return None
         """
         user = self.db.users
-        if userid==None:
-            filter={"username":user_name}
+        if userid == None:
+            filter = {"username": user_name}
         else:
-            filter={"_id":userid}
-        theuser=user.find_one(filter)
-        if theuser!=None:
-            user.update_one(filter,{"$pull":{"notification":notification}})
+            filter = {"_id": userid}
+        theuser = user.find_one(filter)
+        if theuser != None:
+            user.update_one(filter, {"$pull": {"notification": notification}})
             return theuser["_id"]
         else:
             return None
@@ -323,8 +326,6 @@ class AppDB:
         """
         Fetches information about a single board.
 
-        NOTE: DOES NOT include posts, call "fetch_posts()" to get sorted posts!
-
         Parameters:
          - boardid: the unique board ID
 
@@ -376,7 +377,8 @@ class AppDB:
                                 "board_vote_threshold":vote_threshold,
                                 "board_owner":theowner["_id"],
                                 "last_active_date":None,
-                                "board_posts":[]})
+                                "board_posts":[],
+                                "finished_posts":[]})
 
                 board_id=board.find_one({"board_name":boardname})["_id"]
                 user.update_one(filter, {"$push": {"boards_owned":board_id}})
@@ -410,7 +412,7 @@ class AppDB:
                 id=user.find_one({"username":operator})["_id"]
             else:
                 id=operator_id
-            if (id==val["board_owner"]) or (admin.find_one({"userid":id})!=None):
+            if (admin.find_one({"userid":id})!=None):
                 board.delete_one(filter)
                 member = val["board_members"]
                 posts=val["board_posts"]
@@ -427,19 +429,39 @@ class AppDB:
 
 
 
-    def purge_boards(self, days: int):
+    def purge_boards(self, day: int):
         """
         Purges all boards with no activity in recent time.
 
         All users are automatically unsubscribed from the deleted boards.
 
-        This is an expensive operation.
+        This is an very expensive operation.
 
         Parameters:
-         - days: the number of days from today by which boards should be deleted.
-                Posts older than "days" days from today should be deleted
+         - days: boards older than "days" day will be deleted
+        Return: list of id of boards deleted
+        Error: No error
         """
-        pass  # TODO
+        board = self.db.boards
+        user = self.db.users
+        comment = self.db.comments
+        boards = list(board.find())
+        ret=[]
+        for b in boards:
+            if datetime.datetime.now()-b["board_date"]>timedelta(days=day):
+                member = b["board_members"]
+                posts = b["board_posts"]
+                board_id=b["_id"]
+                for post in posts:
+                    comment.delete_one({"_id":post["comments_container"]})
+
+                for uid in member:
+                    user.update_one({"_id": uid}, {"$pull": {"subscriptions": b["_id"]}})
+
+                user.update_one({"_id":b["board_owner"]},{"$pull":{"boards_owned":b["_id"]}})
+                ret.append(board_id)
+                return ret
+
 
     def subscribe_board(self, userid: ObjectId, user_name: str, boardid: ObjectId):
         """
@@ -639,22 +661,44 @@ class AppDB:
         if (theupvoter != None) and (thepost != None) and (thepost["post_notified"]==0) and (theupvoter["_id"] not in thepost["post_upvoters"]):
             board.update_one(p_filter, {"$push":{"board_posts.$.post_upvoters":theupvoter["_id"]}})
             board.update_one(p_filter, {"$inc": {"board_posts.$.post_upvotes": 1}})
+            board.update_one(p_filter, {"$set": {"board_posts.$.last_active_date":datetime.datetime.now()}})
             return post_id
         else:
             return None
 
-    def purge_posts(self, board_id: str, days: int):
+    def purge_posts(self,  board_id: str, day: int):
         """
         Purges all posts older than a given number of days.
 
-        This is an expensive operation.
-
         Parameters:
+
          - board_id: the ID of the board to purge
-         - days: the number of days from today by which posts should be deleted.
-                Posts older than "days" days from today should be deleted
+         - days: the posts with the inactive days longer than this many days will be deleted
+         Return: array of id of posts deleted
+         Error: return None
         """
-        pass  # TODO
+        board=self.db.boards
+        admin=self.db.admins
+        user=self.db.users
+        comment=self.db.comments
+        ret=[]
+
+        b_filter={"_id":board_id}
+
+        theboard=board.find_one(b_filter)
+        if theboard!=None:
+            posts=theboard["board_posts"]
+            for post in posts:
+                if datetime.datetime.now()-post["last_active_date"]>timedelta(days=day):
+                    post_id=post["_id"]
+                    post_owner=post["post_owner"]
+                    board.update_one({"_id":board_id,"board_posts._id":post_id},{"$pull":{"board_posts":{"_id":post_id}}})
+                    user.update_one({"_id": post_owner}, {"$pull": {"posts_owned": post_id}})
+                    comment.delete_one({"post_id": post_id})
+                    ret.append(post_id)
+            return ret
+        else:
+            return None
 
     def add_comment(self, ownerid: ObjectId, owner: str,  boardid: ObjectId, post_id: ObjectId,  message: str):
         """
@@ -674,13 +718,13 @@ class AppDB:
         user = self.db.users
         comment=self.db.comments
         board=self.db.boards
-        b_filter={"_id":boardid,"board_posts._id":post_id}
+        p_filter={"_id":boardid,"board_posts._id":post_id}
         if ownerid == None:
             o_filter = {"username": owner}
         else:
             o_filter = {"_id": ownerid}
         theowner = user.find_one(o_filter)
-        thepost = board.find_one(b_filter)
+        thepost = board.find_one(p_filter)
         if (theowner != None) and (thepost != None):
             comment_id=ObjectId()
             comment.update_one({"_id":post_id}, {"$push": {"comments":
@@ -689,9 +733,8 @@ class AppDB:
                                                                 "comment_message":message,
                                                                 "comment_date":datetime.datetime.now(),
                                                                 "comment_upvotes":0,
-                                                                "comment_upvoters":[]}}}
-                                                                )
-
+                                                                "comment_upvoters":[]}}})
+            board.update_one(p_filter, {"$set": {"board_posts.$.last_active_date": datetime.datetime.now()}})
             return comment_id
         else:
             return None
@@ -704,7 +747,7 @@ class AppDB:
          - operator_id: id of the operator
          - operator: name of the operator
          - post_id: id of the post it belongs to
-         NOTE: use only ownerid or owner, pass "None" to unused parameters!
+         NOTE: use only operatorid or operator, pass "None" to unused parameters!
 
          - comment_id: id of the comment
          Return: id of the comment deleted
