@@ -67,7 +67,7 @@ function add_admin(username, success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
     if (!error) error = printer;
-    data = {username: username};
+    var data = {username: username};
     //send POST request to server with parameter
     jQuery.ajax({
         type: "POST",
@@ -86,7 +86,7 @@ function remove_admin(username, success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
     if (!error) error = printer;
-    data = {username: username};
+    var data = {username: username};
     //send POST request to server with parameter
     jQuery.ajax({
         type: "POST",
@@ -104,7 +104,7 @@ function fetch_board(board_id, success, error) {
     //use default callbacks if none given
     if (!success) success = printer;
     if (!error) error = printer;
-    data = {board_id: board_id};
+    var data = {board_id: board_id};
     //send GET request to server with parameter
     jQuery.ajax({
         type: "GET",
