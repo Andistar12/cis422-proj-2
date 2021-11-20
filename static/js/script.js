@@ -149,6 +149,22 @@ function subscribe_board(id, success, error) {
     });
 }
 
+//unsubscribes the current user from a board with the given id
+function unsubscribe_board(id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {board_id: id};
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/board/unsubscribe",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
 //deletes the given board
 //must be an administrator to delete a board
 function delete_board(id, success, error) {
