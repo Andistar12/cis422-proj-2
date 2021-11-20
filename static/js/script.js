@@ -72,7 +72,6 @@ function add_admin(username, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/admins/add",
-        contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: data,
         success: success,
@@ -91,7 +90,6 @@ function remove_admin(username, success, error) {
     jQuery.ajax({
         type: "POST",
         url: $SCRIPT_ROOT + "/api/admins/remove",
-        contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: data,
         success: success,
