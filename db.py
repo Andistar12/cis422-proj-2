@@ -763,9 +763,9 @@ class AppDB:
 
         else:
             o_filter = {"_id": operator_id}
-        # theowner = user.find_one(o_filter)
-        thecomment = comment.find_one(c_filter)
-        if (thecomment!=None) :
+        theowner = user.find_one(o_filter)
+        thecomment = comment.find_one(c_filter, {"comments.$": 1})["comments"][0]
+        if (thecomment != None) and ((theowner["_id"] == thecomment["comment_owner"]) or (admin.find_one({"userid": theowner["_id"]}) != None)):
 
             comment.update_one(c_filter, {"$pull":{"comments":{"_id":comment_id}}})
 
