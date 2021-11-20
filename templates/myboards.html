@@ -46,7 +46,7 @@
             let template = document.querySelector("#myboard_template")
 
             // Define success function
-            success = function(data) {
+            let success = function(data) {
                 if (data.length <= 0) {
                     // No boards
                     sec.appendChild(document.querySelector("#myboard_noboards").content.cloneNode(true));
@@ -70,6 +70,7 @@
                                 btn.innerHTML = "Unsubscribed!";
                             };
                             let btn_error = function() {
+                                display_error("An error occurred subscribing. Reload the page?");
                                 btn.innerHTML = "Error";
                             };
                             unsubscribe_board(board_id, btn_success, btn_error);
@@ -82,8 +83,8 @@
             };
 
             // Define error function
-            error = function() {
-                alert("An error occurred fetching boards. Reload page?")
+            let error = function() {
+                display_error("An error occurred fetching boards. Reload the page?");
             };
 
             // Do board fetch

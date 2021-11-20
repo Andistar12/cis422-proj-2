@@ -144,6 +144,9 @@
             $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
         </script>
 
+        <!-- Setup alerting -->
+        {% include "alerts.html" %}
+
         {% block content %}{% endblock %}
     </body>
 </html>

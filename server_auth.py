@@ -12,7 +12,7 @@ from passlib.hash import sha256_crypt as pwd_context
 import flask_login
 from flask_login import login_required, logout_user, UserMixin, fresh_login_required, login_user
 from flask_wtf import FlaskForm as Form
-from wtforms import BooleanField, StringField, validators
+from wtforms import BooleanField, StringField, validators, PasswordField
 
 # Import our modules
 import db_connect
@@ -24,13 +24,12 @@ class LoginForm(Form):
     """
     username = StringField('Username', [
         validators.Length(min=2, max=25,
-        message=u"A little too short or long for a username."),
-        validators.InputRequired(u"Input is required.")])
-    password = StringField('Password', [
+        message=u"Username must be between 2 and 25 characters long"),
+        validators.InputRequired(u"Username input is required.")])
+    password = PasswordField('Password', [
         validators.Length(min=2, max=25,
-        message=u"Huh, little too short for a password."),
-        validators.InputRequired(u"Forget something?")])    
-    remember = BooleanField('Remember me')    
+        message=u"Password must be between 2 and 25 characters long"),
+        validators.InputRequired(u"Password input is required")])
 
 class RegisterForm(Form):
     """
@@ -38,12 +37,14 @@ class RegisterForm(Form):
     """
     username = StringField('Username', [
         validators.Length(min=2, max=25,
-        message=u"A little too short or long for a username."),
-        validators.InputRequired(u"Input is required.")])
-    password = StringField('Password', [
+        message=u"Username must be between 2 and 25 characters long"),
+        validators.InputRequired(u"Username input is required.")])
+    password = PasswordField('New Password', [
         validators.Length(min=2, max=25,
-        message=u"Huh, little too short for a password."),
-        validators.InputRequired(u"Forget something?")])   
+        message=u"Password must be between 2 and 25 characters long"),
+        validators.InputRequired(u"Password input is required"),
+        validators.EqualTo("confirm", message="Passwords must match")])
+    confirm = PasswordField("Confirm password")
 
 def get_salt(base_string: str):
     """
@@ -168,12 +169,16 @@ def register():
                 hashed_pass = hash_password(password)
                 new_id = db_connect.get_db().add_user(user_name = request.form["username"], password = hashed_pass)
                 session['username'] = request.form['username']
+                flash("Account successfully created. Please log in", "info")
                 return redirect(url_for('auth_blueprint.login')) # Redirect wants function name, not endpoint
             else:
-                return 'A user with that username already exists, please try another username.'   
-    #otherwise it is a GET request or error and we render the register page
+                flash("A user with that username already exists.", "error")
+                return redirect(url_for("auth_blueprint.register"))
         else:
-            return "failed to validate"
+            for _, err in form.errors.items():
+                flash(err, "error")
+            return redirect(url_for("auth_blueprint.register"))
+    # otherwise it is a GET request or error and we render the register page
     else:
         return render_template("register.html", form=form)
 
@@ -199,15 +204,20 @@ def login():
                     user = UserObject(username)
                     if login_user(user, remember=True):
                         session.permanent = True
+                        flash("Welcome, " + username, "info")
                         return redirect(url_for('pages_blueprint.my_boards')) # Redirect wants function name, not endpoint
                     else:
-                        return "An internal error occurred loggin you in"
+                        flash("An internal error occurred. Please try again", "error")
+                        return render_template("login.html", form=form)
                 else:
-                    return 'Invalid username or password, please try again!'
+                    flash("Invalid username or password. Please try again", "error")
+                    return render_template("login.html", form=form)
             else:
-                return 'Invalid username or password, please try again!'
-    #handling invalid inputs and the GET requests        
-        flash('Invalid input, please try again!')
+                flash("Invalid username or password. Please try again", "error")
+                return render_template("login.html", form=form)
+        #handling invalid inputs and the GET requests
+        for _, err in form.errors.items():
+            flash(err, "error")
         return render_template("login.html", form=form)
     else:
         return render_template("login.html", form=form)
