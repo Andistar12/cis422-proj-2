@@ -1,0 +1,53 @@
+<!-- Handles alerting the user -->
+
+<div id="alert-section"></div>
+
+<!-- Error alert -->
+<template id="alert-error">
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span id="alert-message-span" class="block sm:inline">Error</span>
+        <button class="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onclick="closeAlert(event)">
+            <span>×</span>
+        </button>
+    </div>
+</template>
+
+<!-- Warning alert -->
+<template id="alert-warning">
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span id="alert-message-span" class="block sm:inline">Warning</span>
+        <button class="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onclick="closeAlert(event)">
+            <span>×</span>
+        </button>
+    </div>
+</template>
+
+<!-- Info alert -->
+<template id="alert-info">
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span id="alert-message-span" class="block sm:inline">Info</span>
+        <button class="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onclick="closeAlert(event)">
+            <span>×</span>
+        </button>
+    </div>
+</template>
+
+<!-- Scripting -->
+<script src="/static/js/alert.js"></script>
+<script>
+        function closeAlert(event){
+            let element = event.target;
+            while(element.nodeName !== "BUTTON"){
+                element = element.parentNode;
+            }
+            element.parentNode.parentNode.removeChild(element.parentNode);
+        }
+
+        // Add alerts from Flask
+        let alert_errors = {{ get_flashed_messages(category_filter=["error"])|tojson }};
+        let alert_warnings = {{ get_flashed_messages(category_filter=["warning"])|tojson }};
+        let alert_info = {{ get_flashed_messages(category_filter=["info"])|tojson }};
+        if (alert_errors) alert_errors.forEach(alert => display_info(alert));
+        if (alert_warnings) alert_warnings.forEach(alert => display_info(alert));
+        if (alert_info) alert_info.forEach(alert => display_info(alert));
+</script>
