@@ -544,7 +544,7 @@ class AppDB:
         thepost=board.find_one({"_id":boardid, "board_posts._id":post_id})
 
         if (thepost!=None) :
-            return board.find_one({"_id":boardid, "board_posts._id":post_id},{"board_post.$":1})
+            return board.find_one({"_id":boardid, "board_posts._id":post_id},{"board_posts.$":1})["board_posts"][0]
         else:
             return {}
 
