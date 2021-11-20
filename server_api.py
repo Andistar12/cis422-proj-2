@@ -443,7 +443,17 @@ def api_post_delete():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_admin():
+        return {'error': 'Must be an administrator to delete a post'}, 403
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    post_id = ObjectId(form['post_id'])
+    ret = db.delete_post(None, username, board_id, post_id)
+    if ret is None:
+        return {'error': 'Could not delete post'}, 404
+    return Response(status=200)
 
 @blueprint.route("/api/post/purge", methods=["POST"])
 def api_post_purge():

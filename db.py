@@ -626,7 +626,7 @@ class AppDB:
         else:
             o_filter = {"_id": operator_id}
         theowner = user.find_one(o_filter)
-        thepost = board.find_one(p_filter)
+        thepost = board.find_one(p_filter,{"board_posts.$":1})["board_posts"][0]
         if ((theowner["_id"] ==thepost["post_owner"]) or (admin.find_one({"userid":theowner["_id"]})!=None)) and (thepost != None):
 
                 board.update_one(p_filter,{"$pull":{"board_posts":{"_id":post_id}}})
