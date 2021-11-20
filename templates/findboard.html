@@ -24,10 +24,20 @@
             <h3 class="text-jade text-3xl font-semibold">Temp Board Name</h3>
             <p class="mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
         </div>
-        <div class="flex justify-end mt-4">
-            <a href="#" class="text-xl font-medium text-chardonnay">Go to board -></a>
+        <div class="flow-root mt-4">
+            <button class="float-left">Subscribe</button>
+            <a href="#" class="float-right text-xl font-medium text-chardonnay">View -></a>
         </div>
         </div>
+</template>
+
+<!-- Define the template for having no boards -->
+<template id="findboard_noboards">
+    <div class="w-full max-w-md bg-nav_grey rounded-lg justify-center">
+        <p>
+            You are not subscribed to any boards! <a href="findboard.html">Find a Board</a> to subscribe to!
+        </p>
+    </div>
 </template>
 
 <!-- Javascript to load the boards-->
@@ -41,23 +51,58 @@
 
             // Define success function
             success = function(data) {
+                if (data.length <= 0) {
+                    // No boards
+                    sec.appendChild(document.querySelector("#findboard_noboards").content.cloneNode(true));
+                } else {
+                    data.forEach(function(board) {
 
-                data.forEach(function(board) {
-                    // Setup board
-                    let clone = template.content.cloneNode(true);
-                    let title = clone.querySelector("h3");
-                    title.innerHTML = board["board_name"];
-                    let desc = clone.querySelector("p");
-                    desc.innerHTML = board["board_description"];
-                    let link = clone.querySelector("a");
-                    // TODO set board link
+                        let board_id = board["_id"]["$oid"];
 
-                    // Add board to layout
-                    sec.appendChild(clone);
-                });
+                        let b_succ = function(data) {
+                            // Setup board
+                            let clone = template.content.cloneNode(true);
+                            let title = clone.querySelector("h3");
+                            title.innerHTML = data["board_name"];
+                            let desc = clone.querySelector("p");
+                            desc.innerHTML = data["board_description"];
+                            let link = clone.querySelector("a");
+                            link.href = "/viewboard.html?board=" + board_id;
+                            let btn = clone.querySelector("button");
+                            btn.addEventListener("click", function() {
+                                btn.disabled = true;
+                                btn.style.pointerEvents = "none";
+                                let btn_success = function(data) {
+                                    btn.innerHTML = "Subscribed!";
+                                };
+                                let btn_error = function() {
+                                    btn.innerHTML = "Error";
+                                };
+                                subscribe_board(board_id, btn_success, btn_error);
+                            });
 
-                console.log("Received data from backend:");
-                console.log(data);
+                            // Add board to layout
+                            sec.appendChild(clone);
+                        };
+
+                        let b_error = function() {
+                            // Setup board
+                            let clone = template.content.cloneNode(true);
+                            let title = clone.querySelector("h3");
+                            title.innerHTML = "Error";
+                            let desc = clone.querySelector("p");
+                            desc.innerHTML = "An error occurred fetching this board information";
+                            let link = clone.querySelector("a");
+                            link.href = "/viewboard.html?board=" + board_id;
+
+                            // Add board to layout
+                            sec.appendChild(clone);
+                        };
+
+                        fetch_board(board_id, b_succ, b_error);
+
+                    });
+                }
             };
 
             // Define error function
