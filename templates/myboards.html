@@ -66,10 +66,11 @@
                         btn.addEventListener("click", function() {
                             btn.disabled = true;
                             btn.style.pointerEvents = "none";
-                            let btn_success = function(data) {
+                            let btn_success = function() {
                                 btn.innerHTML = "Unsubscribed!";
                             };
-                            let btn_error = function() {
+                            let btn_error = function(err) {
+                                console.log(err);
                                 display_error("An error occurred subscribing. Reload the page?");
                                 btn.innerHTML = "Error";
                             };
@@ -83,7 +84,8 @@
             };
 
             // Define error function
-            let error = function() {
+            let error = function(err) {
+                console.log(err);
                 display_error("An error occurred fetching boards. Reload the page?");
             };
 

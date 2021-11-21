@@ -25,7 +25,7 @@
                 subscribe_board(board_id, btn_success, btn_error);
             }
             let err = function(err) {
-                display_error("Error creating board: " + data.responseJSON.error);
+                display_error("Error creating board: " + get_error(err));
             }
             display_info("Creating board...");
             create_board(document.getElementById("board-name").value, document.getElementById("board-desc").value, document.getElementById("board-threshold").value, succ, err);

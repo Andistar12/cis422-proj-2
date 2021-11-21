@@ -41,3 +41,9 @@ function display_info(message) {
     // Add to layout
     sec.appendChild(clone);
 }
+
+function get_error(err) {
+    // Returns an error string based on a Response object
+    if (err.has("responseJSON") && err.responseJSON.has("error")) return err.responseJSON.error;
+    return err.statusText;
+}

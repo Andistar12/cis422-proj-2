@@ -100,10 +100,11 @@
                                 upvote.addEventListener("click", function () {
                                     upvote.disabled = true;
                                     upvote.style.pointerEvents = "none";
-                                    let btn_success = function (data) {
+                                    let btn_success = function () {
                                         upvote.innerHTML = "Upvoted!";
                                     };
-                                    let btn_error = function () {
+                                    let btn_error = function (err) {
+                                        console.log(err);
                                         display_error("An error occurred upvoting. Reload the page?");
                                         upvote.innerHTML = "Error";
                                     };
@@ -129,7 +130,7 @@
                     display_posts();
                 };
                 let error = function(err) {
-                    console.log(err.responseJSON.error);
+                    console.log(err);
                     display_error("An error occurred displaying boards. Try refreshing?");
                 };
 

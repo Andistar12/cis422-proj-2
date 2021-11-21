@@ -21,8 +21,8 @@
                 window.location.href = $SCRIPT_ROOT + "/viewpost.html?board=" + board_id + "&post=" + data["post_id"];
             }
 
-            let error = function(data) {
-                display_error("Error making posting: " + data.responseJSON.error);
+            let error = function(err) {
+                display_error("Error making posting: " + get_error(err));
             }
 
             create_post(board_id, sub, desc, success, error);

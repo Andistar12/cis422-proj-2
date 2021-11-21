@@ -49,7 +49,7 @@
                 display_info("Administrator added.");
             }
             let error = function (err) {
-                display_error("Failed to add administrator: " +  + err.responseJSON.error)
+                display_error("Failed to add administrator: " + get_error(err))
             }
             add_admin(document.getElementById("input-admin").value, succ, error);
         });
@@ -60,7 +60,7 @@
                 display_info("Administrator removed.");
             }
             let error = function (err) {
-                display_error("Failed to remove administrator: " +  + err.responseJSON.error)
+                display_error("Failed to remove administrator: " + get_error(err))
             }
             remove_admin(document.getElementById("input-admin").value, succ, error);
         });
@@ -70,7 +70,7 @@
                 document.getElementById("adminm-list").innerHTML = data;
             }
             let error = function (err) {
-                display_error("Failed to refresh admins list: " +  + err.responseJSON.error)
+                display_error("Failed to refresh admins list: " + get_error(err))
                 document.getElementById("adminm-list").innerHTML = "Error occurred getting admins";
             }
             fetch_admins(succ, error);
@@ -81,7 +81,7 @@
                 display_info("Board removed.");
             }
             let error = function (err) {
-                display_error("Failed to remove board: " +  + err.responseJSON.error);
+                display_error("Failed to remove board: " + get_error(err));
             }
             delete_board(document.getElementById("board-input-id").value, succ, error);
         });
@@ -91,7 +91,8 @@
                 display_info("Post removed.");
             }
             let error = function (err) {
-                display_error("Failed to remove post: " +  + err.responseJSON.error);
+                console.log(err.responseJSON);
+                display_error("Failed to remove post: " + get_error(err));
             }
             delete_post(document.getElementById("board-input-id").value, document.getElementById("post-input-id").value, succ, error);
         });
@@ -101,7 +102,8 @@
                 display_info("Comment removed.");
             }
             let error = function (err) {
-                display_error("Failed to remove comment: " + err.responseJSON.error);
+                console.log(err);
+                display_error("Failed to remove comment: " + get_error(err));
             }
             delete_comment(document.getElementById("post-input-id").value, document.getElementById("comment-input-id").value, succ, error);
         });

@@ -86,7 +86,7 @@
                                     btn.innerHTML = "Subscribed!";
                                 };
                                 let btn_error = function(err) {
-                                    display_error("An error occurred subscribing: " + err.responseJSON.error);
+                                    display_error("An error occurred subscribing: " + get_error(err));
                                     btn.innerHTML = "Error";
                                 };
                                 subscribe_board(board_id, btn_success, btn_error);
