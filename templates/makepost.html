@@ -5,8 +5,30 @@
 <!-- This is the page for when a user wants to make a post. Subject, description, submit. -->
 
 <h3>Make a post</h3>
-<input type="text" placeholder="Subject">
-<input type="text" placeholder="Description">
-<button>Submit!</button>
+<input type="text" placeholder="Subject" id="makepost_subject">
+<input type="text" placeholder="Description" id="makepost_desc">
+<button id="makepost_submit">Submit!</button>
+
+<script>
+    $(document).ready(function () {
+        document.getElementById("makepost_submit").addEventListener("click", function () {
+            let board_id = new URLSearchParams(window.location.search).get("board");
+            let sub = document.getElementById("makepost_subject").value;
+            let desc = document.getElementById("makepost_desc").value;
+
+            let success = function(data) {
+                console.log(data);
+                window.location.href = $SCRIPT_ROOT + "/viewpost.html?board=" + board_id + "&post=" + data["post_id"];
+            }
+
+            let error = function(data) {
+                display_error("Error making posting: " + data.responseJSON.error);
+            }
+
+            create_post(board_id, sub, desc, success, error);
+        });
+    });
+
+</script>
 
 {% endblock %}

@@ -5,17 +5,36 @@
 <!-- This is the page for when a user views a single board. Show posts within the board. Allow to upvote post.-->
 <!-- Posts should have subject, description, creator's username, raw number of upvotes, and button to vote on it -->
 
+<!-- Define the general layout -->
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-4 py-12">
     <div class="text-center pb-12 pt-2 relative">
-        <h1 class="font-bold text-3xl md:text-4xl lg:text-5xl font-heading">
-            Board Name Goes Here
-        </h1>
-    </div>
-    <div class="grid place-items-center justify-center" id="findboard_section"></div>
+        <h1 class="font-bold text-3xl md:text-4xl lg:text-5xl font-heading" id="board_name_header">
 
+        </h1>
+        <h5 id="board_desc_header">
+
+        </h5>
+        <h5 id="board_vote_threshold">
+
+        </h5>
+        <div>
+            <input type="checkbox" checked id="show-notified" name="show-notified" value="Show notified posts">
+            <label for="show-notified">Show notified posts</label>
+            <input type="checkbox" checked id="show-unnotified" name="show-unnotified" value="Show un-notified posts">
+            <label for="show-unnotified">Show unnotified posts</label> |
+            <button type="submit" id="create-new-post">Create New Post</button>
+
+        </div>
+    </div>
+    <div class="grid place-items-center justify-center" id="boardpost_section"></div>
+</section>
+
+<!-- Define the template for an arbitrary board -->
+<template id="boardpost_template">
     <div class="w-full py-4 px-8 bg-nav_grey shadow-lg rounded-lg my-20 flex flex-col justify-center">
         <div>
             <h3 class="text-jade text-3xl font-semibold">Post Subject</h3>
+            <h5 id="upvote_percentage"></h5>
             <p class="mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
         </div>
         <div class="flow-root mt-4">
@@ -23,6 +42,108 @@
             <a href="#" class="float-right text-xl font-medium text-chardonnay">View Post -></a> <!-- TODO: style better colors here-->
         </div>
     </div>
-</section>
+</template>
 
+<!-- Define the template for having no boards -->
+<template id="boardpost_noposts">
+    <div class="w-full max-w-md bg-nav_grey rounded-lg justify-center">
+        <p>
+            No posts found.
+        </p>
+    </div>
+</template>
+
+<script>
+    $(document).ready(function () {
+        if ('content' in document.createElement('template')) {
+            let board_id = new URLSearchParams(window.location.search).get("board");
+
+            if (board_id === null) {
+                display_error("An error occurred displaying boards. No board was found");
+            } else {
+                // Find parent section and template child to clone
+                let sec = document.querySelector("#boardpost_section");
+                let template = document.querySelector("#boardpost_template");
+
+                // Board information
+                let posts = [];
+                let board_members = 0;
+
+                let display_posts = function() {
+                    sec.innerHTML = "";
+                    if (posts.length === 0) {
+                        sec.appendChild(document.querySelector("#boardpost_noposts").content.cloneNode(true));
+                    } else {
+                        console.log(posts);
+                        posts.forEach(function(post) {
+                            let showNotif = document.getElementById("show-notified");
+                            let showNotNotif = document.getElementById("show-unnotified");
+
+                            let is_notified = post["post_notified"];
+                            if ((is_notified && showNotif.checked) || (!is_notified && showNotNotif.checked)) {
+
+                                let post_id = post["_id"]["$oid"];
+
+                                let clone = template.content.cloneNode(true);
+                                let title = clone.querySelector("h3");
+                                title.innerHTML = post["post_subject"];
+                                let desc = clone.querySelector("p");
+                                desc.innerHTML = post["post_description"];
+                                let link = clone.querySelector("a");
+                                link.href = "/viewpost.html?board=" + board_id + "&post=" + post_id;
+                                let upp = clone.querySelector("#upvote_percentage");
+                                console.log(post["post_upvotes"]);
+                                console.log(board_members);
+                                upp.innerHTML = Math.round(post["post_upvotes"] / board_members * 100) + "% upvoted";
+
+                                let upvote = clone.querySelector("button");
+                                upvote.addEventListener("click", function () {
+                                    upvote.disabled = true;
+                                    upvote.style.pointerEvents = "none";
+                                    let btn_success = function (data) {
+                                        upvote.innerHTML = "Upvoted!";
+                                    };
+                                    let btn_error = function () {
+                                        display_error("An error occurred upvoting. Reload the page?");
+                                        upvote.innerHTML = "Error";
+                                    };
+                                    upvote_post(board_id, post_id, btn_success, btn_error);
+                                });
+
+                                // Add board to layout
+                                sec.appendChild(clone);
+                            }
+                        });
+                    }
+                };
+
+                let success = function(data) {
+                    // Setup board information
+                    document.getElementById("board_name_header").innerHTML = data["board_name"];
+                    document.getElementById("board_desc_header").innerHTML = data["board_description"];
+                    document.getElementById("board_vote_threshold").innerHTML = data["board_vote_threshold"] + "% upvote threshold";
+
+                    // Global variables
+                    board_members = data["board_member_count"];
+                    posts = data["posts"];
+                    display_posts();
+                };
+                let error = function(err) {
+                    console.log(err.responseJSON.error);
+                    display_error("An error occurred displaying boards. Try refreshing?");
+                };
+
+                // Fetch posts
+                fetch_board(board_id, success, error);
+
+                // Setup UI elements
+                document.getElementById("create-new-post").addEventListener("click", function () {
+                    window.location.href = $SCRIPT_ROOT + "/makepost.html?board=" + board_id;
+                });
+                document.getElementById("show-notified").addEventListener("click", display_posts);
+                document.getElementById("show-unnotified").addEventListener("click", display_posts);
+            }
+        }
+    });
+</script>
 {% endblock %}
