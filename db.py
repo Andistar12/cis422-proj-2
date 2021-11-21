@@ -93,7 +93,7 @@ class AppDB:
     The manager for all database transactions
     """
 
-    def __init__(self, client):
+    def __init__(self,client):
         """
         Initiates the AppDB manager
 
@@ -246,11 +246,15 @@ class AppDB:
             filter={"_id":userid}
 
         val=user.find_one(filter)
-        if (val!=None) :
+        check=admin.find_one(filter)
+
+        if (val!=None) and (check==None):
             if val["admin"]!=1:
                 user.update_one({"username": val["username"]},{"$set":{"admin":1}})
                 admin.insert_one({"username":val["username"],
                                   "userid":val["_id"]})
+                return admin.find_one({"username":val["username"]})["_id"]
+            else:
                 return admin.find_one({"username":val["username"]})["_id"]
         else:
             return None
@@ -590,25 +594,28 @@ class AppDB:
             o_filter={"_id":ownerid}
         theowner=user.find_one(o_filter)
         theboard=board.find_one(b_filter)
-        if (theowner!=None) and (theboard!=None) and (theboard["_id"] in theowner["subscriptions"]):
-            post_id = ObjectId()
-            comment.insert_one({"post_id": post_id,
-                                "comments": []})
-            container_id=comment.find_one({"post_id": post_id})["_id"]
-            board.update_one(b_filter,{"$push":{"board_posts":{"_id":post_id,
-                                                        "post_subject":subject,
-                                                        "post_description":description,
-                                                        "post_owner":theowner["_id"],
-                                                        "post_date":datetime.datetime.now(),
-                                                        "post_upvotes":0,
-                                                        "post_upvoters":[],
-                                                        "post_notified":0,
-                                                        "comments_container":container_id,
-                                                        "last_active_date":None}}})
+        if (theowner!=None) and (theboard!=None):
+            if (theboard["_id"] in theowner["subscriptions"]):
+                post_id = ObjectId()
+                comment.insert_one({"post_id": post_id,
+                                    "comments": []})
+                container_id=comment.find_one({"post_id": post_id})["_id"]
+                board.update_one(b_filter,{"$push":{"board_posts":{"_id":post_id,
+                                                            "post_subject":subject,
+                                                            "post_description":description,
+                                                            "post_owner":theowner["_id"],
+                                                            "post_date":datetime.datetime.now(),
+                                                            "post_upvotes":0,
+                                                            "post_upvoters":[],
+                                                            "post_notified":0,
+                                                            "comments_container":container_id,
+                                                            "last_active_date":None}}})
 
 
-            user.update_one({"_id":theowner["_id"]},{"$push":{"posts_owned":post_id}})
-            return post_id
+                user.update_one({"_id":theowner["_id"]},{"$push":{"posts_owned":post_id}})
+                return post_id
+            else:
+                return None
         else:
             return None
 
