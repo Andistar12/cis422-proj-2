@@ -66,10 +66,6 @@ function update_subscription_on_server(subscription, remove) {
 		data: JSON.stringify({"subscription_token": subscription, "subscribe": remove}),
 		success: function(response) {
 			console.log("Subscription update accepted");
-		},
-		error: function(xhr) {
-			console.log("/push/subscription returned " + xhr.status);
-			console.log(xhr.responseJSON);
 		}
 	})
 }
