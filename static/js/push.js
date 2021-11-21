@@ -31,6 +31,7 @@ function update_button() {
 	if (sw_reg == null) {
 		// Push notifications not available
 		push_button.textContent = 'Notifications Not Supported';
+		push_button.disabled = true;
 		return;
 	}
 
@@ -88,13 +89,14 @@ function subscribe_user() {
 		})
 		.then(function(subscription) {
 			// Send subscription to server
-			console.log('User has been subscribed.');
+			display_info("You have successfully enabled notifications.");
 			update_subscription_on_server(subscription, true);
 			is_subscribed = true;
 			update_button();
 		})
 		.catch(function(err) {
 			console.log('Failed to subscribe the user: ', err);
+			display_info("Failed to enabled notifications. Try again?");
 			update_button();
 		});
 }
@@ -107,19 +109,17 @@ function unsubscribe_user() {
 		.then(function(subscription) {
 			// First notify server of unsubscription
 			if (subscription) update_subscription_on_server(subscription, false);
-			return subscription;
-		})
-		.then(function(subscription) {
+
 			// Then locally unsubscribe
 			if (subscription) subscription.unsubscribe();
-		})
-		.catch(function(error) {
-			console.log('Error unsubscribing', error);
-		})
-		.then(function() {
+
 			// Finally update UI
 			is_subscribed = false;
+			display_info("You have successfully disabled notifications.");
 			update_button();
+		}).catch(function(error) {
+			console.log('Error unsubscribing', error);
+			display_info("Failed to disable notifications. Try again?");
 		});
 }
 
@@ -143,13 +143,12 @@ function init_push() {
 	sw_reg.pushManager.getSubscription()
 		.then(function(subscription) {
 			is_subscribed = !(subscription === null);
-			/*
-			if (is_subscribed) {
-				console.log('User IS subscribed to push notifications.');
-			} else {
-				console.log('User is NOT subscribed to push notifications.');
+
+			if (subscription !== null) {
+				// Refresh subscription server-side
+				update_subscription_on_server(subscription, true);
+				update_subscription_on_server(subscription, false);
 			}
-			 */
 
 			update_button();
 		});
