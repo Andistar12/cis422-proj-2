@@ -25,13 +25,20 @@
 
 <br><br><hr><br>
 
-<label for="input-board">Enter board/post/comment ID:</label>
-<input type="text" id="input-id" />
+<label for="input-board">Enter board:</label>
+<input type="text" id="board-input-id" />
+
+<label for="input-post">Enter post:</label>
+<input type="text" id="post-input-id" />
+
+<label for="input-comment">Enter comment:</label>
+<input type="text" id="comment-input-id" />
 
 <br>
 
 <button id="delete-board">Delete Board</button> |
-<button id="delete-post">Delete Post</button>
+<button id="delete-post">Delete Post</button> |
+<button id="delete-comment">Delete Comment</button>
 
 <script>
     $(document).ready(function () {
@@ -41,8 +48,8 @@
                 refreshAdmins();
                 display_info("Administrator added.");
             }
-            let error = function () {
-                display_error("Failed to add administrator");
+            let error = function (err) {
+                display_error("Failed to add administrator: " +  + err.responseJSON.error)
             }
             add_admin(document.getElementById("input-admin").value, succ, error);
         });
@@ -52,8 +59,8 @@
                 refreshAdmins();
                 display_info("Administrator removed.");
             }
-            let error = function () {
-                display_error("Failed to remove administrator");
+            let error = function (err) {
+                display_error("Failed to remove administrator: " +  + err.responseJSON.error)
             }
             remove_admin(document.getElementById("input-admin").value, succ, error);
         });
@@ -62,7 +69,8 @@
             let succ = function (data) {
                 document.getElementById("adminm-list").innerHTML = data;
             }
-            let error = function () {
+            let error = function (err) {
+                display_error("Failed to refresh admins list: " +  + err.responseJSON.error)
                 document.getElementById("adminm-list").innerHTML = "Error occurred getting admins";
             }
             fetch_admins(succ, error);
@@ -72,20 +80,30 @@
             let succ = function () {
                 display_info("Board removed.");
             }
-            let error = function () {
-                display_error("Failed to remove board");
+            let error = function (err) {
+                display_error("Failed to remove board: " +  + err.responseJSON.error);
             }
-            delete_board(document.getElementById("input-id").value, succ, error);
+            delete_board(document.getElementById("board-input-id").value, succ, error);
         });
 
         document.getElementById("delete-post").addEventListener("click", function () {
             let succ = function () {
                 display_info("Post removed.");
             }
-            let error = function () {
-                display_error("Failed to remove post");
+            let error = function (err) {
+                display_error("Failed to remove post: " +  + err.responseJSON.error);
             }
-            delete_post(document.getElementById("input-id").value, succ, error);
+            delete_post(document.getElementById("board-input-id").value, document.getElementById("post-input-id").value, succ, error);
+        });
+
+        document.getElementById("delete-comment").addEventListener("click", function () {
+            let succ = function () {
+                display_info("Comment removed.");
+            }
+            let error = function (err) {
+                display_error("Failed to remove comment: " + err.responseJSON.error);
+            }
+            delete_comment(document.getElementById("post-input-id").value, document.getElementById("comment-input-id").value, succ, error);
         });
 
         document.getElementById("refresh-admin").addEventListener("click", refreshAdmins);
