@@ -238,3 +238,80 @@ function delete_post(board_id, post_id, success, error) {
         error: error
     });
 }
+
+//upvotes the post in the given board with the given id
+function upvote_post(board_id, post_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        board_id: board_id,
+        post_id: post_id,
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/post/upvote",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+//adds a comment to the post in the given board with the given id
+function add_comment(board_id, post_id, message, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        board_id: board_id,
+        post_id: post_id,
+        message: message
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/comment/create",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+//upvotes a given comment
+function upvote_comment(post_id, comment_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        post_id: post_id,
+        comment_id: comment_id
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/comment/upvote",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
+//deletes a given comment
+function delete_comment(post_id, comment_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        post_id: post_id,
+        comment_id: comment_id
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/comment/delete",
+        data: data,
+        success: success,
+        error: error
+    });
+}

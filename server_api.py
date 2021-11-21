@@ -490,7 +490,17 @@ def api_post_upvote():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to upvote a post'}
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    post_id = ObjectId(form['post_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.upvote_post(None, username, board_id, post_id)
+    if not ret:
+        return {'error': 'Could not upvote post'}, 404
+    return Response(status=200)
 
 @blueprint.route("/api/comment/create", methods=["POST"])
 def api_comment_create():
@@ -511,7 +521,18 @@ def api_comment_create():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to post a comment'}
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    post_id = ObjectId(form['post_id'])
+    message = form['message']
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.add_comment(None, username, board_id, post_id, message)
+    if not ret:
+        return {'error': 'Could not create comment'}, 404
+    return flask.jsonify({'comment_id': str(ret)})
 
 @blueprint.route("/api/comment/upvote", methods=["POST"])
 def api_comment_upvote():
@@ -522,14 +543,23 @@ def api_comment_upvote():
 
     POST request takes in the following payload:
     {
-        "board_id": the unique ID of the board
         "post_id": the unique ID of the post
         "comment_id": the unique ID of the comment
     }
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to upvote a comment'}
+    form = flask.request.form
+    post_id = ObjectId(form['post_id'])
+    comment_id = ObjectId(form['comment_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.upvote_comment(None, username, post_id, comment_id)
+    if not ret:
+        return {'error': 'Could not upvote comment'}, 404
+    return Response(status=200)
 
 @blueprint.route("/api/comment/delete", methods=["POST"])
 def api_comment_delete():
@@ -540,11 +570,20 @@ def api_comment_delete():
 
     POST request takes in the following payload:
     {
-        "board_id": the ID of the board
         "post_id": the ID of the post
         "comment_id": the ID of the comment
     }
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to delete a comment'}
+    form = flask.request.form
+    post_id = ObjectId(form['post_id'])
+    comment_id = ObjectId(form['comment_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.delete_comment(None, username, post_id, comment_id)
+    if not ret:
+        return {'error': 'Could not delete comment'}, 404
+    return Response(status=200)
