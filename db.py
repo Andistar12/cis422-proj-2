@@ -402,27 +402,29 @@ class AppDB:
         Error: return None
         """
         board = self.db.boards
-        user=self.db.users
-        admin=self.db.admins
-        comment=self.db.comments
-        filter={"_id":boardid}
-        val=board.find_one(filter)
-        if val != None:
-            if operator_id==None:
-                id=user.find_one({"username":operator})["_id"]
-            else:
-                id=operator_id
-            if (admin.find_one({"userid":id})!=None):
+        user = self.db.users
+        admin = self.db.admins
+        comment = self.db.comments
+        filter = {"_id": boardid}
+        val = board.find_one(filter)
+        if operator_id != None:
+            u_filter = {"_id": operator_id}
+        else:
+            u_filter = {"username": operator}
+        theuser = user.find_one(u_filter)
+        if val != None and theuser != None:
+
+            if (admin.find_one({"userid": theuser["_id"]}) != None):
                 board.delete_one(filter)
                 member = val["board_members"]
-                posts=val["board_posts"]
+                posts = val["board_posts"]
                 for post in posts:
-                    comment.delete_one({"_id":post["comments_container"]})
+                    comment.delete_one({"_id": post["comments_container"]})
 
                 for uid in member:
                     user.update_one({"_id": uid}, {"$pull": {"subscriptions": val["_id"]}})
 
-                user.update_one({"_id":val["board_owner"]},{"$pull":{"boards_owned":val["_id"]}})
+                user.update_one({"_id": val["board_owner"]}, {"$pull": {"boards_owned": val["_id"]}})
                 return val["_id"]
         else:
             return None
@@ -476,18 +478,20 @@ class AppDB:
          Return: subscribed board id
          Error: return None
         """
-        user=self.db.users
-        board=self.db.boards
-        if userid==None:
-            u_filter={"username": user_name}
+        user = self.db.users
+        board = self.db.boards
+        if userid == None:
+            u_filter = {"username": user_name}
         else:
-            u_filter={"_id":userid}
-        b_filter={"_id": boardid}
-        theuser=user.find_one(u_filter)
-        theboard=board.find_one(b_filter)
-        if (theuser!=None) and (theboard!=None) and (boardid not in theuser["subscriptions"]) :
-            user.update_one(u_filter,{"$push":{"subscriptions":theboard["_id"]}})
-            board.update_one(b_filter,{"$push":{"board_members":theuser["_id"]}})
+            u_filter = {"_id": userid}
+        b_filter = {"_id": boardid}
+        theuser = user.find_one(u_filter)
+        theboard = board.find_one(b_filter)
+        if (boardid in theuser["subscriptions"]):
+            return theboard["_id"]
+        elif (theuser != None) and (theboard != None):
+            user.update_one(u_filter, {"$push": {"subscriptions": theboard["_id"]}})
+            board.update_one(b_filter, {"$push": {"board_members": theuser["_id"]}})
             board.update_one(b_filter, {"$inc": {"board_member_count": 1}})
             return theboard["_id"]
         else:
@@ -512,10 +516,12 @@ class AppDB:
             u_filter = {"username": user_name}
         else:
             u_filter = {"_id": userid}
-        b_filter={"_id": boardid}
+        b_filter = {"_id": boardid}
         theuser = user.find_one(u_filter)
         theboard = board.find_one(b_filter)
-        if (theuser != None) and (theboard != None) and (boardid in theuser["subscriptions"]):
+        if (boardid not in theuser["subscriptions"]):
+            return theboard["_id"]
+        if (theuser != None) and (theboard != None):
             user.update_one(u_filter, {"$pull": {"subscriptions": theboard["_id"]}})
             board.update_one(b_filter, {"$pull": {"board_members": theuser["_id"]}})
             board.update_one(b_filter, {"$inc": {"board_member_count": -1}})
