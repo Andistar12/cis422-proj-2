@@ -207,7 +207,7 @@ def api_board():
     else:
         subs = user['subscriptions']
         subscribed = board_id in subs
-    posts = []
+    posts = obj["board_posts"]
     board = {
         'board_id': str(obj['_id']),
         'board_name': obj['board_name'],
@@ -218,7 +218,7 @@ def api_board():
         "subscribed": subscribed,
         "posts": posts
     }
-    return flask.jsonify(board)
+    return json_util.dumps(board)
 
 @blueprint.route("/api/board/create", methods=["POST"])
 def api_board_add():
