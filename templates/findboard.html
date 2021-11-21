@@ -56,7 +56,7 @@
 
             // Find parent section and template child to clone
             let sec = document.querySelector("#findboard_section");
-            let template = document.querySelector("#findboard_template")
+            let template = document.querySelector("#findboard_template");
 
             // Define success function
             let success = function(data) {
@@ -85,8 +85,8 @@
                                 let btn_success = function(data) {
                                     btn.innerHTML = "Subscribed!";
                                 };
-                                let btn_error = function() {
-                                    display_error("An error occurred subscribing. Reload the page?");
+                                let btn_error = function(err) {
+                                    display_error("An error occurred subscribing: " + err.responseJSON.error);
                                     btn.innerHTML = "Error";
                                 };
                                 subscribe_board(board_id, btn_success, btn_error);
@@ -96,7 +96,9 @@
                             sec.appendChild(clone);
                         };
 
-                        let b_error = function() {
+                        let b_error = function(err) {
+                            console.log(err.responseJSON.error);
+
                             // Setup board
                             let clone = template.content.cloneNode(true);
                             let title = clone.querySelector("h3");
@@ -117,7 +119,8 @@
             };
 
             // Define error function
-            let error = function() {
+            let error = function(err) {
+                console.log(err.responseJSON.error);
                 display_error("An error occurred fetching boards. Reload the page?");
             };
 
