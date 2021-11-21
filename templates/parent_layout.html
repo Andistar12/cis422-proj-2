@@ -144,6 +144,7 @@
 
         <script type=text/javascript>
             $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+            new BroadcastChannel("swbc").postMessage({"key": {{ username|tojson|safe }} });
         </script>
 
         <!-- Setup alerting -->

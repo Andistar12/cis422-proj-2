@@ -90,12 +90,23 @@ def do_push_notifications(board_id: ObjectId, post_id: ObjectId):
     def _push_notif_worker(board_id, post_id, vapid_email, private_key):
         post = db_obj.fetch_post(board_id, post_id)
         msg = post.get("post_subject", "Unknown post subject")
-        board_members = db_obj.fetch_board(board_id).get("board_members", [])
+        board = db_obj.fetch_board(board_id)
+        board_members = board.get("board_members", [])
         for m in board_members:
             member = db_obj.fetch_user(userid=m, user_name=None)
             subscriptions = member.get("notification", [])
             for s in subscriptions:
-                send_web_push(s, msg, vapid_email, private_key)
+                payload = {
+                    "username": str(member["username"]),
+                    "board_name": str(board["board_name"]),
+                    "message": msg
+                }
+                try:
+                    send_web_push(s, json.dumps(payload), vapid_email, private_key)
+                except pywebpush.WebPushException as e:
+                    if "subscription has unsubscribed or expired" in str(e):
+                        # Remove the subscription for the future
+                        db_obj.remove_notification(userid=None, user_name=member["username"], notification=s)
 
     # Setup thread (daemon) worker and start it
     t = threading.Thread(target=_push_notif_worker, args=(board_id, post_id, vapid_email, private_key,), daemon=True)
@@ -105,20 +116,20 @@ def do_push_notifications(board_id: ObjectId, post_id: ObjectId):
     return flask.Response(status=200, mimetype="application/json")
 
 
-def send_web_push(subscription_information, message_body, vapid_email, private_key):
+def send_web_push(subscription_information, payload, vapid_email, private_key):
     """
     Sends a single web push notification to one end client
 
     Parameters:
      - subscription_information: The end client subscription generated
-     - message_body: The message string to send off
+     - payload: The message string to send off
      - vapid_email: The email of the VAPID key
      - private_key: The private VAPID key
     """
     #print("Attempting to send message", message_body, "to", subscription_information)
     return pywebpush.webpush(
         subscription_info=subscription_information,
-        data=message_body,
+        data=payload,
         vapid_private_key=private_key,
         vapid_claims={
             "sub": f"mailto: {vapid_email}"

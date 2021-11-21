@@ -124,6 +124,7 @@ function init_push() {
 	// Initiates the push button and fetches the application service ID
 
 	let push_button = document.getElementById("push-button");
+	if (push_button === null) return;
 
 	// Setup push button listener
 	push_button.addEventListener('click', function() {

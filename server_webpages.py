@@ -21,6 +21,12 @@ def is_admin():
     return server_auth.is_admin()
     #return True
 
+def get_curr_username():
+    """
+    Returns the current user's username
+    """
+    return server_auth.get_curr_username()
+
 # Page endpoints
 
 @blueprint.route("/")
@@ -29,7 +35,7 @@ def index():
     """
     Returns the index page home.html
     """
-    return flask.render_template("home.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("home.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.app_errorhandler(404)
 def page_not_found(error):
@@ -37,7 +43,7 @@ def page_not_found(error):
     Returns the 404 page 404.html
     """
     flask.session["linkback"] = flask.url_for("pages_blueprint.index")
-    return flask.render_template("404.html", is_authenticated=is_authenticated(), is_admin=is_admin()), 404
+    return flask.render_template("404.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username()), 404
 
 @blueprint.app_errorhandler(403)
 def page_not_found(error):
@@ -45,7 +51,7 @@ def page_not_found(error):
     Returns the 403 page 403.html
     """
     flask.session["linkback"] = flask.url_for("pages_blueprint.index")
-    return flask.render_template("403.html", is_authenticated=is_authenticated(), is_admin=is_admin()), 403
+    return flask.render_template("403.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username()), 403
 
 @blueprint.route("/admin.html")
 def admin():
@@ -54,7 +60,7 @@ def admin():
     """
     if not is_admin():
         flask.abort(403)
-    return flask.render_template("admin.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("admin.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.route("/findboard.html")
 def find_board():
@@ -63,7 +69,7 @@ def find_board():
     """
     if not is_authenticated():
         flask.abort(403)
-    return flask.render_template("findboard.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("findboard.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.route("/createboard.html")
 def create_board():
@@ -72,7 +78,7 @@ def create_board():
     """
     if not is_authenticated():
         flask.abort(403)
-    return flask.render_template("createboard.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("createboard.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.route("/myboards.html")
 def my_boards():
@@ -81,7 +87,7 @@ def my_boards():
     """
     if not is_authenticated():
         flask.abort(403)
-    return flask.render_template("myboards.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("myboards.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.route("/viewboard.html")
 def view_board():
@@ -91,7 +97,7 @@ def view_board():
     """
     if not is_authenticated():
         flask.abort(403)
-    return flask.render_template("viewboard.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("viewboard.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.route("/viewpost.html")
 def view_post():
@@ -100,7 +106,7 @@ def view_post():
     """
     if not is_authenticated():
         flask.abort(403)
-    return flask.render_template("viewpost.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("viewpost.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())
 
 @blueprint.route("/makepost.html")
 def make_post():
@@ -109,4 +115,4 @@ def make_post():
     """
     if not is_authenticated():
         flask.abort(403)
-    return flask.render_template("makepost.html", is_authenticated=is_authenticated(), is_admin=is_admin())
+    return flask.render_template("makepost.html", is_authenticated=is_authenticated(), is_admin=is_admin(), username=get_curr_username())

@@ -16,6 +16,7 @@
 // in turn trigger the install event again.
 const PRECACHE = 'precache-v1';
 const RUNTIME = 'runtime';
+const USERNAME_CACHE = 'username_cache_req';
 
 // A list of local resources we always want to be cached.
 const PRECACHE_URLS = [ ];
@@ -68,16 +69,58 @@ self.addEventListener('fetch', event => {
   }
 });
 
+const swBroadcastChannel = new BroadcastChannel("swbc");
+swBroadcastChannel.onmessage = function(event) {
+    // Setup database
+    let db_req = indexedDB.open(USERNAME_CACHE, 1);
+    db_req.onupgradeneeded = function(event) {
+        var db = event.target.result;
+        db.createObjectStore(USERNAME_CACHE);
+    };
+
+    // On open, add username to "username" key of USERNAME_CACHE object store of db
+    db_req.onsuccess = function(event2) {
+        let db = event2.target.result;
+        let transaction = db.transaction([USERNAME_CACHE], "readwrite");
+        let objstore = transaction.objectStore(USERNAME_CACHE);
+        objstore.put(event.data.key, "username"); // Fail silently
+    }
+}
+
+// Setup the service worker to receive push notifications
 self.addEventListener('push', function(event) {
-    console.log('[Service Worker] Push Received.');
-    console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
+    let data = JSON.parse(event.data.text());
 
-    const title = 'Push Codelab';
-    const options = {
-        body: `"${event.data.text()}"`,
-        icon: '/images/svg-seeklogo.com.svg',
-        badge: '/images/svg-seeklogo.com.svg'
-  };
+    // Open DB
+    let db_req = indexedDB.open(USERNAME_CACHE, 1);
+    db_req.onupgradeneeded = function(event) {
+        var db = event.target.result;
+        db.createObjectStore(USERNAME_CACHE);
+    };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+    // On open, add username to "username" key of USERNAME_CACHE object store of db
+    db_req.onsuccess = function(event2) {
+        let db = event2.target.result;
+        let transaction = db.transaction([USERNAME_CACHE], "readonly");
+        let objstore = transaction.objectStore(USERNAME_CACHE);
+        let req = objstore.get("username");
+        req.onsuccess = function(event3) {
+            let cached_username = req.result;
+
+            // Check username match against notification
+            if (data["username"] === cached_username) {
+                // This is actually for us
+                const title = data["board_name"];
+                let msg = data["message"];
+
+                const options = {
+                    body: msg,
+                    icon: '/images/svg-seeklogo.com.svg',
+                    badge: '/images/svg-seeklogo.com.svg'
+                };
+
+                event.waitUntil(self.registration.showNotification(title, options));
+            }
+        };
+    }
 });

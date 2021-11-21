@@ -140,7 +140,9 @@ def get_curr_username():
     """
     Fetches the username of the current user. Assumes they are already authenticated
     """
-    return flask_login.current_user.get_id()
+    if is_authenticated():
+        return flask_login.current_user.get_id()
+    return ""
 
 @login_manager.user_loader
 def user_loader(username):
@@ -180,7 +182,7 @@ def register():
             return redirect(url_for("auth_blueprint.register"))
     # otherwise it is a GET request or error and we render the register page
     else:
-        return render_template("register.html", form=form)
+        return render_template("register.html", form=form, username="")
 
 @blueprint.route("/login.html", methods=["GET", "POST"])
 def login():
@@ -208,19 +210,19 @@ def login():
                         return redirect(url_for('pages_blueprint.my_boards')) # Redirect wants function name, not endpoint
                     else:
                         flash("An internal error occurred. Please try again", "error")
-                        return render_template("login.html", form=form)
+                        return redirect(url_for('auth_blueprint.login'))
                 else:
                     flash("Invalid username or password. Please try again", "error")
-                    return render_template("login.html", form=form)
+                    return redirect(url_for('auth_blueprint.login'))
             else:
                 flash("Invalid username or password. Please try again", "error")
-                return render_template("login.html", form=form)
+                return redirect(url_for('auth_blueprint.login'))
         #handling invalid inputs and the GET requests
         for _, err in form.errors.items():
             flash(err, "error")
-        return render_template("login.html", form=form)
+        return redirect(url_for('auth_blueprint.login'))
     else:
-        return render_template("login.html", form=form)
+        return render_template("login.html", form=form, username="")
 
 @blueprint.route("/logout")
 @login_required
