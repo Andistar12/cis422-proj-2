@@ -160,10 +160,6 @@ function init_push() {
 		success: function(response) {
 			//console.log("Subscription key successfully registered");
 			localStorage.setItem('applicationServerPublicKey',response.public_key);
-		},
-		error: function(xhr) {
-			console.log("/push/subscription returned " + xhr.status);
-			console.log(xhr.responseJSON);
 		}
 	})
 }
