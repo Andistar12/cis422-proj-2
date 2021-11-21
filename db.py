@@ -487,16 +487,18 @@ class AppDB:
         b_filter = {"_id": boardid}
         theuser = user.find_one(u_filter)
         theboard = board.find_one(b_filter)
-        if (boardid in theuser["subscriptions"]):
-            return theboard["_id"]
-        elif (theuser != None) and (theboard != None):
-            user.update_one(u_filter, {"$push": {"subscriptions": theboard["_id"]}})
-            board.update_one(b_filter, {"$push": {"board_members": theuser["_id"]}})
-            board.update_one(b_filter, {"$inc": {"board_member_count": 1}})
-            return theboard["_id"]
+        if (theuser!=None):
+            if (boardid in theuser["subscriptions"]):
+                return theboard["_id"]
+            elif (theboard != None):
+                user.update_one(u_filter, {"$push": {"subscriptions": theboard["_id"]}})
+                board.update_one(b_filter, {"$push": {"board_members": theuser["_id"]}})
+                board.update_one(b_filter, {"$inc": {"board_member_count": 1}})
+                return theboard["_id"]
+            else:
+                return None
         else:
             return None
-
     def unsubscribe_board(self, userid: ObjectId, user_name: str, boardid: ObjectId):
         """
         Unsubscribes a user to a board.
@@ -519,13 +521,16 @@ class AppDB:
         b_filter = {"_id": boardid}
         theuser = user.find_one(u_filter)
         theboard = board.find_one(b_filter)
-        if (boardid not in theuser["subscriptions"]):
-            return theboard["_id"]
-        if (theuser != None) and (theboard != None):
-            user.update_one(u_filter, {"$pull": {"subscriptions": theboard["_id"]}})
-            board.update_one(b_filter, {"$pull": {"board_members": theuser["_id"]}})
-            board.update_one(b_filter, {"$inc": {"board_member_count": -1}})
-            return theboard["_id"]
+        if theuser!=None:
+            if (boardid not in theuser["subscriptions"]):
+                return theboard["_id"]
+            elif (theboard != None):
+                user.update_one(u_filter, {"$pull": {"subscriptions": theboard["_id"]}})
+                board.update_one(b_filter, {"$pull": {"board_members": theuser["_id"]}})
+                board.update_one(b_filter, {"$inc": {"board_member_count": -1}})
+                return theboard["_id"]
+            else:
+                return None
         else:
             return None
 
@@ -631,14 +636,20 @@ class AppDB:
 
         else:
             o_filter = {"_id": operator_id}
-        theowner = user.find_one(o_filter)
-        thepost = board.find_one(p_filter,{"board_posts.$":1})["board_posts"][0]
-        if ((theowner["_id"] ==thepost["post_owner"]) or (admin.find_one({"userid":theowner["_id"]})!=None)) and (thepost != None):
-
-                board.update_one(p_filter,{"$pull":{"board_posts":{"_id":post_id}}})
-                user.update_one({"_id":thepost["post_owner"]},{"$pull":{"posts_owned":post_id}})
-                comment.delete_one({"post_id":post_id})
-                return post_id
+        theoperator = user.find_one(o_filter)
+        thepost = board.find_one(p_filter)
+        if thepost!=None:
+            theownerid = board.find_one(p_filter,{"board_posts.$":1})["board_posts"][0]["post_owner"]
+        else:
+            return None
+        if theoperator!=None:
+            if ((theoperator["_id"] ==theownerid) or (admin.find_one({"userid":theoperator["_id"]})!=None)) :
+                    board.update_one(p_filter,{"$pull":{"board_posts":{"_id":post_id}}})
+                    user.update_one({"_id":thepost["post_owner"]},{"$pull":{"posts_owned":post_id}})
+                    comment.delete_one({"post_id":post_id})
+                    return post_id
+            else:
+                return None
         else:
             return None
 
@@ -664,11 +675,14 @@ class AppDB:
             u_filter = {"_id": upvoterid}
         thepost = board.find_one(p_filter)
         theupvoter = user.find_one(u_filter)
-        if (theupvoter != None) and (thepost != None) and (thepost["post_notified"]==0) and (theupvoter["_id"] not in thepost["post_upvoters"]):
-            board.update_one(p_filter, {"$push":{"board_posts.$.post_upvoters":theupvoter["_id"]}})
-            board.update_one(p_filter, {"$inc": {"board_posts.$.post_upvotes": 1}})
-            board.update_one(p_filter, {"$set": {"board_posts.$.last_active_date":datetime.datetime.now()}})
-            return post_id
+        if thepost!=None and theupvoter!=None:
+            if (thepost["post_notified"]==0) and (theupvoter["_id"] not in thepost["post_upvoters"]):
+                board.update_one(p_filter, {"$push":{"board_posts.$.post_upvoters":theupvoter["_id"]}})
+                board.update_one(p_filter, {"$inc": {"board_posts.$.post_upvotes": 1}})
+                board.update_one(p_filter, {"$set": {"board_posts.$.last_active_date":datetime.datetime.now()}})
+                return post_id
+            else:
+                return None
         else:
             return None
 
@@ -769,13 +783,18 @@ class AppDB:
 
         else:
             o_filter = {"_id": operator_id}
-        theowner = user.find_one(o_filter)
-        thecomment = comment.find_one(c_filter, {"comments.$": 1})["comments"][0]
-        if (thecomment != None) and ((theowner["_id"] == thecomment["comment_owner"]) or (admin.find_one({"userid": theowner["_id"]}) != None)):
-
-            comment.update_one(c_filter, {"$pull":{"comments":{"_id":comment_id}}})
-
-            return comment_id
+        theoperator = user.find_one(o_filter)
+        thecomment = comment.find_one(c_filter)
+        if thecomment!=None:
+            theownerid = comment.find_one(c_filter, {"comments.$": 1})["comments"][0]["comment_owner"]
+        else:
+            return None
+        if theoperator!=None:
+            if  ((theoperator["_id"] == theownerid) or (admin.find_one({"userid": theoperator["_id"]}) != None)):
+                comment.update_one(c_filter, {"$pull":{"comments":{"_id":comment_id}}})
+                return comment_id
+            else:
+                return None
         else:
             return None
 
