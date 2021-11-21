@@ -490,7 +490,17 @@ def api_post_upvote():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    pass # TODO
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to upvote a post'}
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    post_id = ObjectId(form['post_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.upvote_post(None, username, board_id, post_id)
+    if not ret:
+        return {'error': 'Could not upvote post'}, 404
+    return Response(status=200)
 
 @blueprint.route("/api/comment/create", methods=["POST"])
 def api_comment_create():

@@ -656,7 +656,7 @@ class AppDB:
             u_filter = {"username": upvoter}
         else:
             u_filter = {"_id": upvoterid}
-        thepost = board.find_one(p_filter)
+        thepost = board.find_one(p_filter,{"board_posts.$":1})["board_posts"][0]
         theupvoter = user.find_one(u_filter)
         if (theupvoter != None) and (thepost != None) and (thepost["post_notified"]==0) and (theupvoter["_id"] not in thepost["post_upvoters"]):
             board.update_one(p_filter, {"$push":{"board_posts.$.post_upvoters":theupvoter["_id"]}})

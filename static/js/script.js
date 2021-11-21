@@ -238,3 +238,22 @@ function delete_post(board_id, post_id, success, error) {
         error: error
     });
 }
+
+//upvotes the post in the given board with the given id
+function upvote_post(board_id, post_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        board_id: board_id,
+        post_id: post_id,
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/post/upvote",
+        data: data,
+        success: success,
+        error: error
+    });
+}
