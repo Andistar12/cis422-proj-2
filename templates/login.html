@@ -5,34 +5,34 @@
 <!-- This is the login page where user enters username and password and clicks button to login. -->
 
 <!-- component -->
-<div class="row">
-	<h1>Sign In</h1>
-</div>
-<div class="row">
-	<form method="post" novalidate>
-		{{ form.hidden_tag() }}
-		<div class="col-4">
-			<div class="form-group">
-				<label class="form-check-label" for="usernameBox">{{ form.username.label }}</label>
-				<br>
-				{{ form.username(size=32, class="form-control", id="usernameBox") }}
-				<!-- <input type="text" class="form-control" placeholder="Username" aria-label="Username" name="username"> -->
-			</div>
-			<div class="form-group">
-				<label class="form-check-label" for="passwordBox">{{ form.password.label }}</label>
-				<br>
-				{{ form.password(size=32, class="form-control", id="passwordBox") }}
-				<!-- <input type="text" class="form-control" placeholder="Password" aria-label="Password" name="password"> -->
-			</div>
-			<!-- <div class="form-check form-switch">
-				<input class="form-check-input" type="checkbox" id="rememberMeCheck" name="remember" value="true">
-				<label class="form-check-label" for="rememberMeCheck">Remember</label>
-			</div> -->
-			<div class="input-group mb-4">
-				<button class="btn btn-outline-primary" id="button-login">Login</button>
-			</div>
-		</div>
-	</form>
+<div class="flex flex-col items-center justify-center h-screen select-none">
+    <div class="flex flex-col -mt-32 bg-white px-4 sm:px-6 md:px-8 lg:px-10 py-8 rounded-xl shadow-2xl w-full max-w-md  border-l-4 border-chardonnay">
+        <div class="font-medium self-center text-4xl w-60 text-center p-6 text-jade">Sign In</div>
+        <div class="mt-10">
+            <form method="POST" action="" autocomplete="">
+				{{ form.hidden_tag() }}                
+                <div class="relative w-full mb-3">
+                    <input type="text" name="username" id="usernameBox" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Username" style="transition: all 0.15s ease 0s;" />
+                    <small class="p-2 text-red-500">* Username</small>
+                </div>
+                <div class="relative w-full mb-3">
+                    <input type="password" name="password" id="passwordBox" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Password" style="transition: all 0.15s ease 0s;" />
+                    <small class="p-2 text-red-500">* Password</small>
+                </div>
+                <div class="text-center mt-6">
+                    <input type="submit" name="signin" id="button-login" value="Sign In" class="p-3 rounded-lg bg-jade hover:bg-chardonnay outline-none text-white shadow w-32 justify-center focus:bg-chardonnay">
+                </div>  
+                <div class="flex flex-wrap mt-6">
+                    <div class="w-1/2 text-left">
+                        <a href="#" class="hidden text-madang hover:text-medium_aquamarine text-xl"><small>Forgot password?</small></a>
+                    </div>
+                    <div class="w-1/2 text-right">
+                        <a href="/register.html" class="text-madang hover:text-medium_aquamarine text-xl"><small>Register</small></a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
