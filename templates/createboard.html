@@ -6,11 +6,23 @@
 
 <h3>Create a board!</h3>
 
-<input type="text" placeholder="Board Name">
-<input type="text" placeholder="Description of Board">
-<input type="number" placeholder="Vote threshold">
-<button>Submit!</button>
+<input type="text" id="board-name" placeholder="Board Name">
+<input type="text" id="board-desc" placeholder="Description of Board">
+<input type="number" id="board-threshold" placeholder="Vote threshold">
+<button id="submit-board">Submit!</button>
 
-
+<script>
+    $(document).ready(function () {
+        document.getElementById("submit-board").addEventListener("click", function() {
+            let succ = function(data) {
+                window.location.href = $SCRIPT_ROOT + "/viewboard.html?board=" + data["board_id"]
+            }
+            let err = function(err) {
+                display_error("Error creating board: " + err["error"]);
+            }
+            create_board(document.getElementById("board-name").value, document.getElementById("board-desc").value, document.getElementById("board-threshold").value, succ, err);
+        });
+    });
+</script>
 
 {% endblock %}
