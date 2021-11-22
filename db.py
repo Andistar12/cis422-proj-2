@@ -652,7 +652,7 @@ class AppDB:
         if theoperator!=None:
             if ((theoperator["_id"] ==theownerid) or (admin.find_one({"userid":theoperator["_id"]})!=None)) :
                     board.update_one(p_filter,{"$pull":{"board_posts":{"_id":post_id}}})
-                    user.update_one({"_id":thepost["post_owner"]},{"$pull":{"posts_owned":post_id}})
+                    user.update_one({"_id":theownerid},{"$pull":{"posts_owned":post_id}})
                     comment.delete_one({"post_id":post_id})
                     return post_id
             else:
