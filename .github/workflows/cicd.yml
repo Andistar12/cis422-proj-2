@@ -3,7 +3,7 @@ name: Build and push to GCP
 on: [push]
 
 jobs:
-    build-tsp:
+    build-tac:
         runs-on: ubuntu-latest
         steps:
               # Checkout the code
