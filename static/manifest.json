@@ -1,11 +1,11 @@
 {
-    "name": "Route Finder",
-    "short_name": "Route Finder",
-    "description": "Find optimal routes to all your destinations!",
+    "name": "tac",
+    "short_name": "tac",
+    "description": "",
     "lang": "en-US",
     "start_url": "/",
     "display": "fullscreen",
-    "theme_color": "#2974ce",
+    "theme_color": "#01A66F",
     "icons": [
       {
         "src": "/static/app-logo-small.png",
