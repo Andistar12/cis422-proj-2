@@ -258,6 +258,25 @@ function upvote_post(board_id, post_id, success, error) {
     });
 }
 
+//unupvotes the post in the given board with the given id
+function unupvote_post(board_id, post_id, success, error) {
+    //use default callbacks if none given
+    if (!success) success = printer;
+    if (!error) error = printer;
+    var data = {
+        board_id: board_id,
+        post_id: post_id,
+    };
+    //send POST request to server with parameter
+    jQuery.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + "/api/post/upvote/cancel",
+        data: data,
+        success: success,
+        error: error
+    });
+}
+
 //adds a comment to the post in the given board with the given id
 function add_comment(board_id, post_id, message, success, error) {
     //use default callbacks if none given

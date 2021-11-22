@@ -402,7 +402,7 @@ def api_post_create():
         "post_description": Description of post
     }
 
-    The user must be subscribed to the board to subscribe.
+    The user must be subscribed to the board to create a post.
 
     Returns the following payload:
     {
@@ -499,6 +499,33 @@ def api_post_upvote():
     ret = db.upvote_post(None, username, board_id, post_id)
     if not ret:
         return {'error': 'Could not upvote post'}, 404
+    return Response(status=200)
+
+@blueprint.route("/api/post/upvote/cancel", methods=["POST"])
+def api_post_cancel_vote():
+    """
+    Rescinds an upvote on a post.
+
+    If a post has already been notified, it's votes can no longer be rescinded.
+
+    POST request takes in the following payload:
+    {
+        "board_id": the unique ID of the board
+        "post_id": the unique ID of the post
+    }
+
+    Returns 200 OK or a JSON with "error" set to an associated message.
+    """
+    if not server_auth.is_authenticated():
+        return {'error': 'Must be logged in to cancel a vote'}
+    form = flask.request.form
+    board_id = ObjectId(form['board_id'])
+    post_id = ObjectId(form['post_id'])
+    username = server_auth.get_curr_username()
+    db = db_connect.get_db()
+    ret = db.unupvote_post(None, username, board_id, post_id)
+    if not ret:
+        return {'error': 'Could not cancel vote'}, 404
     return Response(status=200)
 
 @blueprint.route("/api/comment/create", methods=["POST"])

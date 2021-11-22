@@ -693,6 +693,39 @@ class AppDB:
         else:
             return None
 
+    def unupvote_post(self, upvoterid: ObjectId, upvoter: str, boardid: ObjectId, post_id: ObjectId):
+        """
+        Rescinds an upvote given to a post
+
+        Parameters:
+         - upvoter id: id of the upvoter
+         - upvoter: name of the upvoter
+
+         NOTE: use only upvoterid or upvotername, pass "None" to unused parameters!
+         - post_id: the ID of the post to un-upvote
+         Return: id of post un-upvoted
+         Error: Return None
+        """
+        user = self.db.users
+        board=self.db.boards
+        p_filter={"_id":boardid,"board_posts._id":post_id}
+        if upvoterid == None:
+            u_filter = {"username": upvoter}
+        else:
+            u_filter = {"_id": upvoterid}
+        thepost = board.find_one(p_filter,{"board_posts.$":1})["board_posts"][0]
+        theupvoter = user.find_one(u_filter)
+        if thepost!=None and theupvoter!=None:
+            if (thepost["post_notified"]==0) and (theupvoter["_id"] in thepost["post_upvoters"]):
+                board.update_one(p_filter, {"$pull":{"board_posts.$.post_upvoters":theupvoter["_id"]}})
+                board.update_one(p_filter, {"$inc": {"board_posts.$.post_upvotes": -1}})
+                board.update_one(p_filter, {"$set": {"board_posts.$.last_active_date":datetime.datetime.now()}})
+                return post_id
+            else:
+                return None
+        else:
+            return None
+
     def purge_posts(self,  board_id: str, day: int):
         """
         Purges all posts older than a given number of days.
