@@ -388,7 +388,6 @@ def api_post():
         "post_upvotes": obj['post_upvotes'],
         "post_comments": comments
     }
-    print(post)
     return flask.jsonify(post)
 
 @blueprint.route("/api/post/create", methods=["POST"])
