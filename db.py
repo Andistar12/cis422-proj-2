@@ -752,7 +752,30 @@ class AppDB:
         else:
             return {}
 
+    def moveto_finishedpost(self, boardid: ObjectId):
+        """
+        Move all notified posts in a board to the finished posts
 
+        Parameters:
+         - board_id: the ID of the board the post belongs under
+
+        Returns: A array of id of posts moved
+        Error:return None
+        """
+
+        board=self.db.boards
+        theboard=board.find_one({"_id":boardid})
+        if (theboard!=None) :
+            ret=[]
+            posts=board.find_one({"_id":boardid})["board_posts"]
+            for post in posts:
+                if post["post_notified"]==1:
+                    board.update_one({"_id":boardid},{"$push":{"finished_posts":post}})
+                    board.update_one({"_id":boardid},{"$pull":{"board_posts":{"_id":post["_id"]}}})
+                    ret.append(post["_id"])
+            return ret
+        else:
+            return None
 
     def create_post(self, ownerid: ObjectId, owner: str, boardid: ObjectId,  subject: str, description: str):
         """
