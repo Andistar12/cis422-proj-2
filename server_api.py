@@ -359,6 +359,7 @@ def api_post():
         "post_date": string, creation date of the post
         "post_upvotes": integer, number of raw upvotes
         "post_comments": Array of comments (see below)
+        "upvoted": Boolean, true if user is logged in and has upvoted the post
     }
 
     Comments have the following format:
@@ -380,13 +381,21 @@ def api_post():
     if not obj:
         return {'error': 'Could not find post'}, 404
     comments = db.fetch_comments(post_id)
+    upvoted = False
+    if server_auth.is_authenticated():
+        username = server_auth.get_curr_username()
+        user = db.fetch_user(None, username)
+        user_id = user['_id']
+        upvotes = obj['post_upvoters']
+        upvoted = ObjectId(user_id) in upvotes
     post = {
         'post_id': str(obj['_id']),
         'post_subject': obj['post_subject'],
         "post_username": str(obj['post_owner']),
         "post_date": str(obj['post_date']),
         "post_upvotes": obj['post_upvotes'],
-        "post_comments": comments
+        "post_comments": comments,
+        "upvoted": upvoted
     }
     return flask.jsonify(post)
 
