@@ -100,7 +100,7 @@ class AppDB:
         Parameters:
          - client: the MongoDB client
         """
-        self.client = MongoClient("mongodb+srv://tchen3:2964@cluster0.6se93.mongodb.net/p2_app_db?retryWrites=true&w=majority")
+        self.client = client
         self.db=self.client.p2_db
 
 
@@ -167,6 +167,7 @@ class AppDB:
         """
         user=self.db.users
         board=self.db.boards
+        admin=self.db.admins
         if userid==None:
             filter={"username":user_name}
         else:
@@ -178,7 +179,8 @@ class AppDB:
             for id in subs:
                 board.update_one({"_id":id},{"$pull":{"board_members":val["_id"]}})
                 board.update_one({"_id": id}, {"$inc": {"board_member_count": 1}})
-
+            if val["admin"]==1:
+                admin.delete_one({"userid":val["_id"]})
             return val["_id"]
         else:
             return None
@@ -250,7 +252,7 @@ class AppDB:
 
         if (val!=None) and (check==None):
             if val["admin"]!=1:
-                user.update_one({"username": val["username"]},{"$set":{"admin":1}})
+                user.update_one({"userid": val["_id"]},{"$set":{"admin":1}})
                 admin.insert_one({"username":val["username"],
                                   "userid":val["_id"]})
                 return admin.find_one({"username":val["username"]})["_id"]
