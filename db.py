@@ -100,7 +100,7 @@ class AppDB:
         Parameters:
          - client: the MongoDB client
         """
-        self.client = client
+        self.client = MongoClient("mongodb+srv://tchen3:2964@cluster0.6se93.mongodb.net/p2_app_db?retryWrites=true&w=majority")
         self.db=self.client.p2_db
 
 
@@ -719,7 +719,7 @@ class AppDB:
             if (thepost["post_notified"]==0) and (theupvoter["_id"] in thepost["post_upvoters"]):
                 board.update_one(p_filter, {"$pull":{"board_posts.$.post_upvoters":theupvoter["_id"]}})
                 board.update_one(p_filter, {"$inc": {"board_posts.$.post_upvotes": -1}})
-                board.update_one(p_filter, {"$set": {"board_posts.$.last_active_date":datetime.datetime.now()}})
+
                 return post_id
             else:
                 return None
