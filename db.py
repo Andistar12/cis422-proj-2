@@ -862,12 +862,58 @@ class AppDB:
             u_filter = {"_id": upvoterid}
         thecomment = comment.find_one(c_filter)
         theupvoter = user.find_one(u_filter)
-        if (theupvoter != None) and (thecomment != None):
-            comment.update_one(c_filter,{"$push":{"comments.$.comment_upvoters":theupvoter["_id"]}})
-            comment.update_one(c_filter,{"$inc": {"comments.$.comment_upvotes": 1}})
-            return comment_id
+        if (thecomment != None):
+            theupvoters= comment.find_one(c_filter, {"comments.$": 1})["comments"][0]["comment_upvoters"]
         else:
             return None
+        if theupvoter!=None:
+            if theupvoter["_id"] not in theupvoters:
+                comment.update_one(c_filter,{"$push":{"comments.$.comment_upvoters":theupvoter["_id"]}})
+                comment.update_one(c_filter,{"$inc": {"comments.$.comment_upvotes": 1}})
+                return comment_id
+            else:
+                return None
+        else:
+            return None
+
+    def unupvote_comment(self, upvoterid: ObjectId, upvoter: str, post_id: ObjectId,  comment_id: ObjectId):
+        """
+        Upvotes a comment. Rescinds the upvote if the user already upvoted it.
+
+        Parameters:
+         - upvoterid: id of the upvoter
+         - upvoter: name of the upvoter
+         - post_id: id of the post it belongs to
+         NOTE: use only boardid or boardname, pass "None" to unused parameters!
+
+         - comment_id: the ID of the comment being upvoted
+        Return: id of the comment upvoted
+        Error: return None
+        """
+        user = self.db.users
+        board = self.db.boards
+        comment=self.db.comments
+        c_filter={"_id":post_id,"comments._id":comment_id}
+        if upvoterid == None:
+            u_filter = {"username": upvoter}
+        else:
+            u_filter = {"_id": upvoterid}
+        thecomment = comment.find_one(c_filter)
+        theupvoter = user.find_one(u_filter)
+        if (thecomment != None):
+            theupvoters= comment.find_one(c_filter, {"comments.$": 1})["comments"][0]["comment_upvoters"]
+        else:
+            return None
+        if theupvoter!=None:
+            if theupvoter["_id"] in theupvoters:
+                comment.update_one(c_filter,{"$pull":{"comments.$.comment_upvoters":theupvoter["_id"]}})
+                comment.update_one(c_filter,{"$inc": {"comments.$.comment_upvotes": -1}})
+                return comment_id
+            else:
+                return None
+        else:
+            return None
+
 
     def fetch_comments(self, post_id: ObjectId):
         comment=self.db.comments
