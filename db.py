@@ -185,6 +185,57 @@ class AppDB:
         else:
             return None
 
+    def change_username(self, userid: ObjectId, user_name: str, new_username: str):
+        """
+        Removes a user from the database if exists
+
+        Parameters:
+         - userid: the id of the user
+         - username: the username of the user to remove
+         NOTE: use only userid or username, pass "None" to unused parameters!
+        Return: An object of ID (created by MongoDB) of user changed
+        Error: return None
+        """
+        user=self.db.users
+        admin=self.db.admins
+        if userid==None:
+            filter={"username":user_name}
+        else:
+            filter={"_id":userid}
+        val=user.find_one(filter)
+        if val != None:
+            user.update_one(filter,{"$set":{"username":new_username}})
+            if val["admin"]==1:
+                admin.update_one({"userid":val["_id"]},{"$set":{"username":new_username}})
+            return val["_id"]
+        else:
+            return None
+
+    def change_password(self, userid: ObjectId, user_name: str, new_password: str):
+        """
+        Removes a user from the database if exists
+
+        Parameters:
+         - userid: the id of the user
+         - username: the username of the user to remove
+         NOTE: use only userid or username, pass "None" to unused parameters!
+        Return: An object of ID (created by MongoDB) of user changed
+        Error: return None
+        """
+        user=self.db.users
+        admin=self.db.admins
+        if userid==None:
+            filter={"username":user_name}
+        else:
+            filter={"_id":userid}
+        val=user.find_one(filter)
+        if val != None:
+            user.update_one(filter,{"$set":{"password":new_password}})
+
+            return val["_id"]
+        else:
+            return None
+
     def add_notification(self, userid: ObjectId, user_name: str, notification: dict):
         """
 
@@ -435,6 +486,73 @@ class AppDB:
         else:
             return None
 
+    def change_boardname(self, operator_id: ObjectId, operator: str, boardid: ObjectId, new_boardname: str):
+        """
+        Deletes a board from the database.
+
+        All users are automatically unsubscribed from the deleted board.
+        This is expensive operation
+        Parameters:
+         - operator_id : id of the operator
+         - operator : name of the operator
+         NOTE: use only operator_id or operator, pass "None" to unused parameters!
+         - boardid: the board ID to change
+
+        Return: the id of board changed
+        Error: return None
+        """
+        board = self.db.boards
+        user = self.db.users
+        admin = self.db.admins
+
+        filter = {"_id": boardid}
+        val = board.find_one(filter)
+        if operator_id != None:
+            u_filter = {"_id": operator_id}
+        else:
+            u_filter = {"username": operator}
+        theuser = user.find_one(u_filter)
+        if val != None and theuser != None:
+
+            if (admin.find_one({"userid": theuser["_id"]}) != None) or (val["board_owner"]==theuser["_id"]):
+                board.update_one(filter,{"$set":{"board_name":new_boardname}})
+                return val["_id"]
+        else:
+            return None
+
+    def change_boarddescription(self, operator_id: ObjectId, operator: str, boardid: ObjectId, new_description: str):
+        """
+        Deletes a board from the database.
+
+        All users are automatically unsubscribed from the deleted board.
+        This is expensive operation
+        Parameters:
+         - operator_id : id of the operator
+         - operator : name of the operator
+         NOTE: use only operator_id or operator, pass "None" to unused parameters!
+         - boardid: the board ID to change
+
+        Return: the id of board changed
+        Error: return None
+        """
+        board = self.db.boards
+        user = self.db.users
+        admin = self.db.admins
+
+        filter = {"_id": boardid}
+        val = board.find_one(filter)
+        if operator_id != None:
+            u_filter = {"_id": operator_id}
+        else:
+            u_filter = {"username": operator}
+        theuser = user.find_one(u_filter)
+        if val != None and theuser != None:
+
+            if (admin.find_one({"userid": theuser["_id"]}) != None) or (val["board_owner"]==theuser["_id"]):
+                board.update_one(filter,{"$set":{"board_description":new_description}})
+                return val["_id"]
+        else:
+            return None
 
 
     def purge_boards(self, day: int):
@@ -834,6 +952,45 @@ class AppDB:
         if theoperator!=None:
             if  ((theoperator["_id"] == theownerid) or (admin.find_one({"userid": theoperator["_id"]}) != None)):
                 comment.update_one(c_filter, {"$pull":{"comments":{"_id":comment_id}}})
+                return comment_id
+            else:
+                return None
+        else:
+            return None
+
+    def change_comment(self, operator_id: ObjectId, operator: str,  post_id: ObjectId, comment_id: ObjectId, new_comment: str):
+        """
+        Removes a comment from a post.
+
+        Parameters:
+         - operator_id: id of the operator
+         - operator: name of the operator
+         - post_id: id of the post it belongs to
+         NOTE: use only operatorid or operator, pass "None" to unused parameters!
+
+         - comment_id: id of the comment
+         Return: id of the comment changed
+         Error: return None
+        """
+
+        user = self.db.users
+        admin = self.db.admins
+        comment=self.db.comments
+        c_filter={"post_id":post_id,"comments._id":comment_id }
+        if operator_id == None:
+            o_filter = {"username": operator}
+
+        else:
+            o_filter = {"_id": operator_id}
+        theoperator = user.find_one(o_filter)
+        thecomment = comment.find_one(c_filter)
+        if thecomment!=None:
+            theownerid = comment.find_one(c_filter, {"comments.$": 1})["comments"][0]["comment_owner"]
+        else:
+            return None
+        if theoperator!=None:
+            if  ((theoperator["_id"] == theownerid) or (admin.find_one({"userid": theoperator["_id"]}) != None)):
+                comment.update_one(c_filter, {"$set":{"comments.$.comment_message":new_comment}})
                 return comment_id
             else:
                 return None
