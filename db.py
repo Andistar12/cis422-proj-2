@@ -418,16 +418,17 @@ class AppDB:
         """
         board=self.db.boards
         user=self.db.users
-        if(board.find_one({"board_name":boardname})!=None):
-            pass
+
+        if board.find_one({"board_name":boardname})!=None:
+            return None
+
+        if ownerid==None:
+            filter={"username":owner}
         else:
-            if ownerid==None:
-                filter={"username":owner}
-            else:
-                filter={"_id":ownerid}
-            theowner=user.find_one(filter)
-            if theowner!=None:
-                board.insert_one({"board_name":boardname,
+            filter={"_id":ownerid}
+        theowner=user.find_one(filter)
+        if theowner!=None:
+            board.insert_one({"board_name":boardname,
                                 "board_description":desc,
                                 "board_date":datetime.datetime.now(),
                                 "board_member_count":0,
@@ -438,11 +439,11 @@ class AppDB:
                                 "board_posts":[],
                                 "finished_posts":[]})
 
-                board_id=board.find_one({"board_name":boardname})["_id"]
-                user.update_one(filter, {"$push": {"boards_owned":board_id}})
-                return board_id
-            else:
-                return None
+            board_id=board.find_one({"board_name":boardname})["_id"]
+            user.update_one(filter, {"$push": {"boards_owned":board_id}})
+            return board_id
+        else:
+            return None
 
     def delete_board(self, operator_id: ObjectId, operator: str, boardid: ObjectId):
         """
@@ -1178,15 +1179,14 @@ class AppDB:
 
     def notify_post(self, boardid: ObjectId, post_id: ObjectId):
         user = self.db.users
-
         board=self.db.boards
 
         p_filter={"_id": boardid, "board_posts._id":post_id}
         thepost = board.find_one(p_filter)
 
         if  (thepost != None):
-            board.update_one(p_filter, {"$set": {"board_post.$.post_notified": 1}})
-            board.update_one(p_filter, {"$set": {"board_post.$.post_upvotes": float("inf")}})
+            board.update_one(p_filter, {"$set": {"board_posts.$.post_notified": 1}})
+            board.update_one(p_filter, {"$set": {"board_posts.$.post_upvotes": float("inf")}})
             return post_id
         else:
             return None
