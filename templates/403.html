@@ -3,6 +3,27 @@
 
 <!-- This is the 403 page for authentication errors. Offer redirect to home page -->
 
-<p>We know what you are looking for and you are naughty!</p>
+<div class="border-t text-center pt-8">
+
+    <h1 class="text-9xl font-bold text-jade">403</h1>
+
+    <h1 class="text-6xl font-medium py-8">Sorry! This is forbidden.</h1>
+
+    <p class="text-2xl pb-8 px-12 font-medium">Please check the URL in the address bar and try again.</p>
+
+    <br>
+
+    {% if is_authenticated %}
+
+        <a href="/myboards.html" class="bg-jade text-nav_grey transition duration-420 ease-in-out hover:bg-medium_aquamarine hover:text-chardonnay text-2xl py-4 px-12 rounded-md font-medium" aria-current="page">Back to My Boards</a>
+
+    {% else %}
+
+        <a href="/home.html" class="bg-jade text-nav_grey transition duration-420 ease-in-out hover:bg-medium_aquamarine hover:text-chardonnay text-2xl py-4 px-12 rounded-md font-medium" aria-current="page">Back to Home</a>
+
+    {% endif %}
+
+</div>
+
 
 {% endblock %}
