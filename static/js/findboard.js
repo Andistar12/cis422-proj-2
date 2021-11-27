@@ -28,25 +28,32 @@ $(document).ready(function () {
                         let link = clone.querySelector("a");
                         link.href = "/viewboard.html?board=" + board_id;
                         let btn = clone.querySelector("button");
-                        btn.addEventListener("click", function() {
+                        if (data["subscribed"]) {
+                            btn.innerHTML = "Subscribed!";
                             btn.disabled = true;
-                            btn.style.pointerEvents = "none";
-                            let btn_success = function(data) {
-                                btn.innerHTML = "Subscribed!";
-                            };
-                            let btn_error = function(err) {
-                                display_error("An error occurred subscribing: " + get_error(err));
-                                btn.innerHTML = "Error";
-                            };
-                            subscribe_board(board_id, btn_success, btn_error);
-                        });
+                            btn.style.cursor = "default";
+                        } else {
+                            btn.addEventListener("click", function() {
+                                btn.disabled = true;
+                                btn.style.pointerEvents = "none";
+                                let btn_success = function(data) {
+                                    btn.innerHTML = "Subscribed!";
+                                };
+                                let btn_error = function(err) {
+                                    display_error("An error occurred subscribing: " + get_error(err));
+                                    btn.innerHTML = "Error";
+                                };
+                                subscribe_board(board_id, btn_success, btn_error);
+                            });
+
+                        }
 
                         // Add board to layout
                         sec.appendChild(clone);
                     };
 
                     let b_error = function(err) {
-                        console.log(err.responseJSON.error);
+                        console.log(get_error(err));
 
                         // Setup board
                         let clone = template.content.cloneNode(true);
@@ -69,7 +76,7 @@ $(document).ready(function () {
 
         // Define error function
         let error = function(err) {
-            console.log(err.responseJSON.error);
+            console.log(get_error(err));
             display_error("An error occurred fetching boards. Reload the page?");
         };
 
