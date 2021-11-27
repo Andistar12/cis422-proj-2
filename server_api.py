@@ -6,6 +6,7 @@ from flask import Response
 
 import db_connect
 import server_auth
+import server_notifs
 import bson
 from bson import json_util
 from bson.objectid import ObjectId
@@ -508,6 +509,18 @@ def api_post_upvote():
     ret = db.upvote_post(None, username, board_id, post_id)
     if not ret:
         return {'error': 'Could not upvote post'}, 404
+    board = db.fetch_board(board_id)
+    post = db.fetch_post(board_id, post_id)
+    threshold = board['board_vote_threshold']
+    upvotes = post['post_upvotes']
+    subscribers = board['board_member_count']
+    #notify if not already notified and upvote ratio exceeds threshold
+    #upvotes/subscribers >= threshold/100
+    #multiply both sides by (100*subscribers) to get:
+    if (upvotes * 100) >= (subscribers * threshold):
+        if not post['post_notified']:
+            server_notifs.do_push_notifications(board_id, post_id)
+            db.notify_post(board_id, post_id)
     return Response(status=200)
 
 @blueprint.route("/api/post/upvote/cancel", methods=["POST"])
