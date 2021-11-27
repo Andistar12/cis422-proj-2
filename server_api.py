@@ -243,9 +243,18 @@ def api_board_add():
     if not server_auth.is_authenticated():
         return {'error': 'Must be logged in to create board'}, 403
     form = flask.request.form
-    name = form['board_name']
-    desc = form['board_description']
-    threshold = form['board_vote_threshold']
+    try:
+        name = form['board_name']
+        desc = form['board_description']
+        threshold = form['board_vote_threshold']
+    except KeyError:
+        return {'error': 'Missing required arguments to create_board'}, 400
+    if not name or not isinstance(name, str) or len(str) > 25:
+        return {'error': 'Board name must be a string with 1-25 characters'}, 400
+    if not desc or not isinstance(desc, str) or len(desc) > 100:
+        return {'error': 'Board description must be a string with 1-25 characters'}, 400
+    if not threshold or not isinstance(threshold, int) or threshold < 1 or threshold > 100:
+        return {'error': 'Board vote threshold must be an integer, 0 < n <= 100'}, 400
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     val = db.create_board(None, username, name, desc, threshold)
