@@ -1186,7 +1186,7 @@ class AppDB:
 
         if  (thepost != None):
             board.update_one(p_filter, {"$set": {"board_posts.$.post_notified": 1}})
-            board.update_one(p_filter, {"$set": {"board_posts.$.post_upvotes": float("inf")}})
+            board.update_one(p_filter, {"$set": {"board_posts.$.post_upvotes": -1}})
             return post_id
         else:
             return None

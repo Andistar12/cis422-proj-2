@@ -36,16 +36,13 @@ $(document).ready(function () {
                             let link = clone.querySelector("a");
                             link.href = "/viewpost.html?board=" + board_id + "&post=" + post_id;
                             let upp = clone.querySelector("#upvote_percentage");
-                            console.log(post["post_upvotes"]);
-                            console.log(board_members);
-                            upp.innerHTML = Math.round(post["post_upvotes"] / board_members * 100) + "% upvoted";
-
                             let upvote = clone.querySelector("button");
                             upvote.addEventListener("click", function () {
                                 upvote.disabled = true;
                                 upvote.style.pointerEvents = "none";
                                 let btn_success = function () {
                                     upvote.innerHTML = "Upvoted!";
+                                    upp.innerHTML = Math.round((post["post_upvotes"] + 1) / board_members * 100) + "% upvoted";
                                 };
                                 let btn_error = function (err) {
                                     console.log(err);
@@ -54,6 +51,12 @@ $(document).ready(function () {
                                 };
                                 upvote_post(board_id, post_id, btn_success, btn_error);
                             });
+                            if (post["post_upvotes"] < 0) {
+                                upp.innerHTML = "Notified!";
+                                upvote.style.display = "none";
+                            } else {
+                                upp.innerHTML = Math.round(post["post_upvotes"] / board_members * 100) + "% upvoted";
+                            }
 
                             // Add board to layout
                             sec.appendChild(clone);
