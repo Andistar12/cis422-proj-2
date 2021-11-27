@@ -18,7 +18,6 @@ $(document).ready(function () {
                 if (posts.length === 0) {
                     sec.appendChild(document.querySelector("#boardpost_noposts").content.cloneNode(true));
                 } else {
-                    console.log(posts);
                     posts.forEach(function(post) {
                         let showNotif = document.getElementById("show-notified");
                         let showNotNotif = document.getElementById("show-unnotified");
