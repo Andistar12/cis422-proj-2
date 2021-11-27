@@ -27,11 +27,14 @@ function update_button() {
     // Updates the push button to either enable or disable notifications
 
 	let push_button = document.getElementById("push-button");
+	let push_button_mobile = document.getElementById("push-button-mobile");
 
 	if (sw_reg == null) {
 		// Push notifications not available
 		push_button.textContent = 'Notifications Not Supported';
 		push_button.disabled = true;
+        push_button_mobile.textContent = 'Notifications Not Supported';
+		push_button_mobile.disabled = true;
 		return;
 	}
 
@@ -39,18 +42,23 @@ function update_button() {
         // User rejected request
 		push_button.textContent = 'Notifications Blocked';
 		push_button.disabled = true;
+		push_button_mobile.textContent = 'Notifications Blocked';
+		push_button_mobile.disabled = true;
 		return;
 	}
 
 	if (is_subscribed) {
 		// Not yet subscribed
 		push_button.textContent = 'Disable Notifications';
+		push_button_mobile.textContent = 'Disable Notifications';
 	} else {
 		// Subscribed
 		push_button.textContent = 'Enable Notifications';
+		push_button_mobile.textContent = 'Enable Notifications';
 	}
 
 	push_button.disabled = false;
+	push_button_mobile.disabled = false;
 }
 
 
@@ -124,6 +132,7 @@ function init_push() {
 	// Initiates the push button and fetches the application service ID
 
 	let push_button = document.getElementById("push-button");
+	let push_button_mobile = document.getElementById("push-button-mobile");
 	if (push_button === null) return;
 
 	// Setup push button listener
@@ -135,6 +144,15 @@ function init_push() {
 			subscribe_user();
 		}
 	});
+    push_button_mobile.addEventListener('click', function() {
+		push_button_mobile.disabled = true;
+		if (is_subscribed) {
+			unsubscribe_user();
+		} else {
+			subscribe_user();
+		}
+	});
+
 
 	// Set the initial subscription value
 	sw_reg.pushManager.getSubscription()
