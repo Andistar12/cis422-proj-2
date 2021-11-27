@@ -248,7 +248,7 @@ def api_board_add():
         desc = form['board_description']
         threshold = form['board_vote_threshold']
     except KeyError:
-        return {'error': 'Missing required arguments to create_board'}, 400
+        return {'error': 'Missing required arguments to create board'}, 400
     if not name or not isinstance(name, str) or len(str) > 25:
         return {'error': 'Board name must be a string with 1-25 characters'}, 400
     if not desc or not isinstance(desc, str) or len(desc) > 100:
@@ -436,9 +436,16 @@ def api_post_create():
     db = db_connect.get_db()
     user = db.fetch_user(None, username)
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
-    subject = form['post_subject']
-    description = form['post_description']
+    try:
+        board_id = ObjectId(form['board_id'])
+        subject = form['post_subject']
+        description = form['post_description']
+    except KeyError:
+        return {'error': 'Missing required arguments to create post'}, 400
+    if not subject or not isinstance(subject, str) or len(subject) > 100:
+        return {'error': 'Subject must be a string with 1-100 characters'}, 403
+    if not description or not isinstance(description, str) or len(description) > 1000:
+        return {'error': 'Description must be a string with 1-1000 characters'}, 403
     if board_id not in user['subscriptions']:
         return {'error': 'Must be subscribed to post to board'}, 403
     ret = db.create_post(None, username, board_id, subject, description)
