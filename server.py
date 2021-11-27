@@ -15,6 +15,7 @@ import config
 app = flask.Flask(__name__)
 app.secret_key = config.get("secret_key", "super secret")
 app.debug = config.get("debug", True)
+app.config["JSON_AS_ASCII"] = False
 
 # Hook into Gunicorn logger (for production only)
 gunicorn_error_logger = logging.getLogger('gunicorn.error')
