@@ -143,8 +143,8 @@ function init_push() {
 
 			if (subscription !== null) {
 				// Refresh subscription server-side
-				update_subscription_on_server(subscription, true);
 				update_subscription_on_server(subscription, false);
+				update_subscription_on_server(subscription, true);
 			}
 
 			update_button();

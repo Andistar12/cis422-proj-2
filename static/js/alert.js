@@ -44,6 +44,7 @@ function display_info(message) {
 
 function get_error(err) {
     // Returns an error string based on a Response object
-    if (err.has("responseJSON") && err.responseJSON.has("error")) return err.responseJSON.error;
+    if ("responseJSON" in err && "error" in err.responseJSON) return err.responseJSON.error;
     return err.statusText;
 }
+

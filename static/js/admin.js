@@ -48,7 +48,7 @@ $(document).ready(function () {
             display_info("Post removed.");
         }
         let error = function (err) {
-            console.log(err.responseJSON);
+            console.log(get_error(err));
             display_error("Failed to remove post: " + get_error(err));
         }
         delete_post(document.getElementById("board-input-id").value, document.getElementById("post-input-id").value, succ, error);

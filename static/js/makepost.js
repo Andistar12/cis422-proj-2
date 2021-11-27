@@ -5,7 +5,6 @@ $(document).ready(function () {
         let desc = document.getElementById("makepost_desc").value;
 
         let success = function(data) {
-            console.log(data);
             window.location.href = $SCRIPT_ROOT + "/viewpost.html?board=" + board_id + "&post=" + data["post_id"];
         }
 
