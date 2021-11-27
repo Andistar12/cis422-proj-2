@@ -11,7 +11,7 @@ import pywebpush
 import json
 import threading
 
-from bson import ObjectId
+from bson import ObjectId, json_util
 
 import config
 import db_connect
@@ -97,12 +97,14 @@ def do_push_notifications(board_id: ObjectId, post_id: ObjectId):
             subscriptions = member.get("notification", [])
             for s in subscriptions:
                 payload = {
+                    "board_id": board_id,
+                    "post_id": post_id,
                     "username": str(member["username"]),
                     "board_name": str(board["board_name"]),
                     "message": msg
                 }
                 try:
-                    send_web_push(s, json.dumps(payload), vapid_email, private_key)
+                    send_web_push(s, json_util.dumps(payload), vapid_email, private_key)
                 except pywebpush.WebPushException as e:
                     if "subscription has unsubscribed or expired" in str(e):
                         # Remove the subscription for the future

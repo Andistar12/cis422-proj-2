@@ -113,10 +113,18 @@ self.addEventListener('push', function(event) {
                 const title = data["board_name"];
                 let msg = data["message"];
 
+                // Construct destination URL
+                let board_id = data["board_id"]["$oid"];
+                let post_id = data["post_id"]["$oid"];
+                let url = "/viewpost.html?board=" + board_id + "&post=" + post_id;
+
                 const options = {
                     body: msg,
                     icon: '/images/svg-seeklogo.com.svg',
-                    badge: '/images/svg-seeklogo.com.svg'
+                    badge: '/images/svg-seeklogo.com.svg',
+                    data: {
+                        url: url
+                    }
                 };
 
                 event.waitUntil(self.registration.showNotification(title, options));
@@ -124,3 +132,16 @@ self.addEventListener('push', function(event) {
         };
     }
 });
+
+// Handle the user interacting with the notification
+self.addEventListener('notificationclick', function(e) {
+    var notification = e.notification;
+    var url = notification.data.url;
+    var action = e.action;
+
+    if (action !== 'close') {
+        clients.openWindow(url);
+    }
+    notification.close();
+});
+
