@@ -8,14 +8,14 @@
     "theme_color": "#01A66F",
     "icons": [
       {
-        "src": "/static/app-logo-small.png",
+        "src": "/static/images/tac_logo_small.jpg",
         "sizes": "200x200",
-        "type": "image/png"
+        "type": "image/jpg"
       },
       {
-        "src": "/static/app-logo-large.png",
-        "sizes": "834x834",
-        "type": "image/png"
+        "src": "/static/images/tac_logo.jpg",
+        "sizes": "1000x1000",
+        "type": "image/jpg"
       }
     ]
   }
