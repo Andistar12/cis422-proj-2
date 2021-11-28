@@ -402,13 +402,17 @@ def api_post():
         user_id = user['_id']
         upvotes = obj['post_upvoters']
         upvoted = ObjectId(user_id) in upvotes
+    owner = db.fetch_user(userid=obj['post_owner'], user_name=None)
+    owner_username = owner['username']
     post = {
         'post_id': str(obj['_id']),
         'post_subject': obj['post_subject'],
-        "post_username": str(obj['post_owner']),
+        'post_description': obj['post_description'],
+        "post_username": owner_username,
         "post_date": str(obj['post_date']),
         "post_upvotes": obj['post_upvotes'],
         "post_comments": comments,
+        "post_notified": obj['post_notified'],
         "upvoted": upvoted
     }
     return flask.jsonify(post)
