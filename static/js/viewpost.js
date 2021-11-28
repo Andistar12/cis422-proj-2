@@ -59,6 +59,8 @@ $(document).ready(function () {
                                     document.getElementById("post-upvote-count").innerHTML = upvotes_raw + 1;
                                     document.getElementById("post-upvote-percent").innerHTML = upp;
                                     btn.innerHTML = "Upvoted!";
+                                    btn.style.cursor = "default";
+                                    btn.disabled = true;
                                 }
                                 let error2 = function(err) {
                                     console.log(err);

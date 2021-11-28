@@ -35,24 +35,8 @@ $(document).ready(function () {
                             let link = clone.querySelector("a");
                             link.href = "/viewpost.html?board=" + board_id + "&post=" + post_id;
                             let upp = clone.querySelector("#upvote_percentage");
-                            let upvote = clone.querySelector("button");
-                            upvote.addEventListener("click", function () {
-                                upvote.disabled = true;
-                                upvote.style.pointerEvents = "none";
-                                let btn_success = function () {
-                                    upvote.innerHTML = "Upvoted!";
-                                    upp.innerHTML = Math.round((post["post_upvotes"] + 1) / board_members * 100) + "% upvoted";
-                                };
-                                let btn_error = function (err) {
-                                    console.log(err);
-                                    display_error("An error occurred upvoting. Reload the page?");
-                                    upvote.innerHTML = "Error";
-                                };
-                                upvote_post(board_id, post_id, btn_success, btn_error);
-                            });
                             if (post["post_upvotes"] < 0) {
                                 upp.innerHTML = "Notified!";
-                                upvote.style.display = "none";
                             } else {
                                 upp.innerHTML = Math.round(post["post_upvotes"] / board_members * 100) + "% upvoted";
                             }
