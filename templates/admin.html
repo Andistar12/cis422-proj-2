@@ -3,42 +3,70 @@
 {% block content %}
 
 <!-- This is the admin page where admin can delete board, delete post, and add/remove admins. -->
-<!-- Admins can also purge boards older than x days, and purge posts in a board older than x days -->
 
-<h3>Admin page</h3>
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-4 py-12">
+	<h1 class="relative text-center font-bold text-3xl md:text-4xl lg:text-5xl font-heading">
+		tac administration
+	</h1>
+	<section class="grid grid-cols-1 sm:grid-cols-2">
+		<div class="w-full max-w-md py-4 px-8 bg-nav_grey shadow-lg rounded-lg my-20 flex flex-col">
+			<h3 class="font-bold text-jade text-2xl text-center">Manage Content</h3>
+			<h6 class="pb-6 text-red-500 text-1xl text-center">Warning: Some actions are irreversible</h3>
 
-<br>
+            <div class="relative w-full mb-3">
+				<input type="text" id="board-input-id" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Board ID" style="transition: all 0.15s ease 0s;" />
+				<small class="p-2">Board ID</small>
+			</div>
 
-<p>Admin list:</p>
-<p id="adminm-list">No admins</p>
+			<div class="relative w-full mb-3">
+				<input type="text" id="post-input-id" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Post ID" style="transition: all 0.15s ease 0s;" />
+				<small class="p-2">Post ID</small>
+			</div>
 
-<br>
+			<div class="relative w-full mb-3">
+				<input type="text" id="admin-input-id" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Admin username" style="transition: all 0.15s ease 0s;" />
+				<small class="p-2">Admin username</small>
+			</div>
 
-<label for="input-admin">Enter admin name:</label>
-<input type="text" id="input-admin" />
 
-<br>
+			<div class="relative w-full mb-3 pt-6">
+				<fieldset class="mb-5 grid grid-cols-1 sm:grid-cols-2">
+					<div class="flex items-center mb-4">
+						<input id="rb-delete-board" type="radio" name="admin-action" value="Delete board" class="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300" aria-labelledby="rb-delete-board" aria-describedby="rb-delete-board" checked>
+						<label for="rb-delete-board" class="text-sm font-medium text-gray-900 ml-2 block">Delete board</label>
+					</div>
+					<div class="flex items-center mb-4">
+						<input id="rb-delete-post" type="radio" name="admin-action" value="Delete post" class="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300" aria-labelledby="rb-delete-post" aria-describedby="rb-delete-post">
+						<label for="rb-delete-post" class="text-sm font-medium text-gray-900 ml-2 block">Delete post</label>
+					</div>
+					<div class="flex items-center mb-4">
+						<input id="rb-add-admin" type="radio" name="admin-action" value="Add admin" class="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300" aria-labelledby="rb-add-admin" aria-describedby="rb-add-admin">
+						<label for="rb-add-admin" class="text-sm font-medium text-gray-900 ml-2 block">Add admin</label>
+					</div>
+					<div class="flex items-center mb-4">
+						<input id="rb-remove-admin" type="radio" name="admin-action" value="Delete post" class="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300" aria-labelledby="rb-remove-admin" aria-describedby="rb-remove-admin">
+						<label for="rb-remove-admin" class="text-sm font-medium text-gray-900 ml-2 block">Remove admin</label>
+					</div>
+				</fieldset>
+			</div>
 
-<button id="add-admin">Add Admin</button> |
-<button id="rem-admin">Remove Admin</button> |
-<button id="refresh-admin">Refresh Admins</button>
+            <button id="btn-admin-action" class="float-center text-xl font-medium text-chardonnay hover:text-medium_aquamarine">Submit Changes</button>
 
-<br><br><hr><br>
+		</div>
 
-<label for="input-board">Enter board:</label>
-<input type="text" id="board-input-id" />
+		<div class="w-full max-w-md py-4 px-8 bg-nav_grey shadow-lg rounded-lg my-20 flex flex-col">
 
-<label for="input-post">Enter post:</label>
-<input type="text" id="post-input-id" />
+			<h3 class="font-bold pb-12 text-jade text-2xl text-center">Admin List</h3>
 
-<label for="input-comment">Enter comment:</label>
-<input type="text" id="comment-input-id" />
+            <div class="relative w-full mb-3 flex flex-grow">
+                <textarea disabled id="admin-list" type="text" style="resize: none" class="flex-grow w-full max-w-md leading-none p-3 border bg-white rounded border-gray-200">Andistar12</textarea>
+			</div>
 
-<br>
+            <button id="btn-refresh-admins" class="float-center text-xl font-medium text-chardonnay hover:text-medium_aquamarine">Refresh List</button>
 
-<button id="delete-board">Delete Board</button> |
-<button id="delete-post">Delete Post</button> |
-<button id="delete-comment">Delete Comment</button>
+		</div>
+	</section>
+</section>
 
 <script src="/static/js/admin.js"></script>
 
