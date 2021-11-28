@@ -74,6 +74,8 @@ $(document).ready(function () {
                 board_members = data["board_member_count"];
                 posts = data["posts"];
                 display_posts();
+
+                document.getElementById("board-content").hidden = false;
             };
             let error = function(err) {
                 console.log(err);
