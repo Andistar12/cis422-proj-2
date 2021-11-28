@@ -13,9 +13,9 @@
         "type": "image/jpg"
       },
       {
-        "src": "/static/images/tac_logo.jpg",
-        "sizes": "1000x1000",
-        "type": "image/jpg"
+        "src": "/static/images/tac_logo_large.png",
+        "sizes": "834x834",
+        "type": "image/png"
       }
     ]
   }
