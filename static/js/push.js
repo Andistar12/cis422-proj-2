@@ -31,26 +31,28 @@ function update_button() {
 
 	if (sw_reg == null) {
 		// Push notifications not available
+        is_subscribed = false;
 		if (push_button) {
             push_button.textContent = 'Notifications Not Supported';
-            push_button.disabled = true;
+            push_button.removeEventListener("click", toggle_notifs);
         }
         if (push_button_mobile) {
             push_button_mobile.textContent = 'Notifications Not Supported';
-            push_button_mobile.disabled = true;
+            push_button_mobile.removeEventListener("click", toggle_notifs);
         }
 		return;
 	}
 
 	if (Notification.permission === 'denied') {
         // User rejected request
+        is_subscribed = false;
         if (push_button) {
             push_button.textContent = 'Notifications Blocked';
-            push_button.disabled = true;
+            push_button.removeEventListener("click", toggle_notifs);
         }
         if (push_button_mobile) {
             push_button_mobile.textContent = 'Notifications Blocked';
-            push_button_mobile.disabled = true;
+            push_button_mobile.removeEventListener("click", toggle_notifs);
         }
 		return;
 	}
@@ -108,7 +110,7 @@ function subscribe_user() {
 		})
 		.catch(function(err) {
 			console.log('Failed to subscribe the user: ', err);
-			display_info("Failed to enabled notifications. Try again?");
+			display_info("Failed to enabled notifications. Have you granted permission?");
 			update_button();
 		});
 }
@@ -135,6 +137,14 @@ function unsubscribe_user() {
 		});
 }
 
+// Toggles whether the user has notifications on or off
+function toggle_notifs() {
+    if (is_subscribed) {
+        unsubscribe_user();
+    } else {
+        subscribe_user();
+    }
+}
 
 function init_push() {
 	// Initiates the push button and fetches the application service ID
@@ -144,23 +154,8 @@ function init_push() {
 	if (push_button === null) return;
 
 	// Setup push button listener
-	push_button.addEventListener('click', function() {
-		push_button.disabled = true;
-		if (is_subscribed) {
-			unsubscribe_user();
-		} else {
-			subscribe_user();
-		}
-	});
-    push_button_mobile.addEventListener('click', function() {
-		push_button_mobile.disabled = true;
-		if (is_subscribed) {
-			unsubscribe_user();
-		} else {
-			subscribe_user();
-		}
-	});
-
+	push_button.addEventListener('click', toggle_notifs);
+    push_button_mobile.addEventListener('click', toggle_notifs);
 
 	// Set the initial subscription value
 	sw_reg.pushManager.getSubscription()
