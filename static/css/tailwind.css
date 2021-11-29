@@ -668,6 +668,10 @@ video {
   display: block;
 }
 
+.inline {
+  display: inline;
+}
+
 .flex {
   display: flex;
 }
@@ -718,10 +722,6 @@ video {
 
 .h-48 {
   height: 12rem;
-}
-
-.h-64 {
-  height: 16rem;
 }
 
 .h-full {
@@ -801,6 +801,10 @@ video {
   --tw-scale-x: 1;
   --tw-scale-y: 1;
   transform: translateX(var(--tw-translate-x)) translateY(var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.-rotate-90 {
+  --tw-rotate: -90deg;
 }
 
 @-webkit-keyframes spin {
@@ -1184,6 +1188,10 @@ video {
   padding-top: 2rem;
 }
 
+.pt-12 {
+  padding-top: 3rem;
+}
+
 .pt-20 {
   padding-top: 5rem;
 }
@@ -1548,9 +1556,6 @@ video {
 }
 
 @media (min-width: 1280px) {
-  .xl\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }
 
 @media (min-width: 1536px) {
