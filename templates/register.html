@@ -12,16 +12,16 @@
             <form method="POST" action="" autocomplete="">
 				{{ form.hidden_tag() }}                
                 <div class="relative w-full mb-3">
-                    <input type="text" name="username" id="usernameBox" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Username" style="transition: all 0.15s ease 0s;" />
-                    <small class="p-2 text-red-500">* Username</small>
+					<h3 class="font-bold">Username <span class="text-red-600">*</span></h3>
+                    <input type="text" name="username" id="usernameBox" class="border-2 border-jade hover:border-medium_aquamarine focus:border-chardonnay transition h-12 px-5 pr-16 rounded-md focus:outline-none w-full text-black text-lg shadow" placeholder="Username"/>
                 </div>
                 <div class="relative w-full mb-3">
-                    <input type="password" name="password" id="passwordBox" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Password" style="transition: all 0.15s ease 0s;" />
-                    <small class="p-2 text-red-500">* Password</small>
+					<h3 class="font-bold">Password <span class="text-red-600">*</span></h3>
+                    <input type="password" name="password" id="passwordBox" class="border-2 border-jade hover:border-medium_aquamarine focus:border-chardonnay transition h-12 px-5 pr-16 rounded-md focus:outline-none w-full text-black text-lg shadow" placeholder="Password"/>
                 </div>
 				<div class="relative w-full mb-3">
-                    <input type="password" name="confirm" id="confirmBox" class="border-0 p-4 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" placeholder="Confirm Password" style="transition: all 0.15s ease 0s;" />
-                    <small class="p-2 text-red-500">* Confirm Password</small>
+					<h3 class="font-bold">Confirm Password <span class="text-red-600">*</span></h3>
+                    <input type="password" name="confirm" id="confirmBox" class="border-2 border-jade hover:border-medium_aquamarine focus:border-chardonnay transition h-12 px-5 pr-16 rounded-md focus:outline-none w-full text-black text-lg shadow" placeholder="Confirm Password"/>
                 </div>
                 <div class="text-center mt-6">
                     <input type="submit" name="register" id="button-login" value="Submit Registration" class="p-3 rounded-lg bg-jade hover:bg-chardonnay outline-none text-white shadow w-46 justify-center focus:bg-chardonnay cursor-pointer">
