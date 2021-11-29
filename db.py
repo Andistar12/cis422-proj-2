@@ -394,7 +394,7 @@ class AppDB:
         filter = {"_id": boardid}
         val = board.find_one(filter)
         if val != None:
-            board.update_one(filter, {"$push": {"board_posts": {"$each": [], "$sort": {"post_upvotes": -1}}}})
+            board.update_one(filter, {"$push": {"board_posts": {"$each": [], "$sort": {"post_notified":-1, "post_upvotes": -1}}}})
             return board.find_one(filter)
         else:
             return {}
