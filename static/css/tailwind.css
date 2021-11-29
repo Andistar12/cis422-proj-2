@@ -704,6 +704,10 @@ video {
   height: 4rem;
 }
 
+.h-24 {
+  height: 6rem;
+}
+
 .h-screen {
   height: 100vh;
 }
