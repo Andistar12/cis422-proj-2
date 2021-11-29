@@ -47,11 +47,16 @@ def push_subscription():
         subscription_token = flask.request.get_json().get("subscription_token", "")
         if subscription_token is None or subscription_token == "":
             return flask.jsonify({"error": "Invalid subscription"}), 400
-        add_sub = flask.request.get_json().get("subscribe", "False")
-        if add_sub:
+        action = flask.request.get_json().get("action", "remove")
+        if action == "add":
+            db_connect.get_db().add_notification(userid=None, user_name=server_auth.get_curr_username(), notification=subscription_token)
+        elif action == "remove":
+            db_connect.get_db().remove_notification(userid=None, user_name=server_auth.get_curr_username(), notification=subscription_token)
+        elif action == "refresh":
+            db_connect.get_db().remove_notification(userid=None, user_name=server_auth.get_curr_username(), notification=subscription_token)
             db_connect.get_db().add_notification(userid=None, user_name=server_auth.get_curr_username(), notification=subscription_token)
         else:
-            db_connect.get_db().remove_notification(userid=None, user_name=server_auth.get_curr_username(), notification=subscription_token)
+            return flask.jsonify({"error": "Unknown action"}), 400
         return flask.Response(status=200, mimetype="application/json")
 
 @blueprint.route("/push/test", methods=["POST"])

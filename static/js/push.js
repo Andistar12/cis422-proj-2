@@ -70,20 +70,20 @@ function update_button() {
 }
 
 
-function update_subscription_on_server(subscription, remove) {
+function update_subscription_on_server(subscription, action) {
 	// Sends the subscription to the server and whether to subscribe or unsubscribe
 
-	$.ajax({
+	return $.ajax({
 		type:"POST",
 		url: $SCRIPT_ROOT + "/push/subscription",
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		async: true,
-		data: JSON.stringify({"subscription_token": subscription, "subscribe": remove}),
+		data: JSON.stringify({"subscription_token": subscription, "action": action}),
 		success: function(response) {
 			console.log("Subscription update accepted");
 		}
-	})
+	});
 }
 
 
@@ -102,7 +102,7 @@ function subscribe_user() {
 		.then(function(subscription) {
 			// Send subscription to server
 			display_info("You have successfully enabled notifications.");
-			update_subscription_on_server(subscription, true);
+			update_subscription_on_server(subscription, "add");
 			is_subscribed = true;
 			update_button();
 		})
@@ -120,7 +120,7 @@ function unsubscribe_user() {
 	sw_reg.pushManager.getSubscription()
 		.then(function(subscription) {
 			// First notify server of unsubscription
-			if (subscription) update_subscription_on_server(subscription, false);
+			if (subscription) update_subscription_on_server(subscription, "remove");
 
 			// Then locally unsubscribe
 			if (subscription) subscription.unsubscribe();
@@ -169,8 +169,7 @@ function init_push() {
 
 			if (subscription !== null) {
 				// Refresh subscription server-side
-				update_subscription_on_server(subscription, false);
-				update_subscription_on_server(subscription, true);
+				update_subscription_on_server(subscription, "refresh");
 			}
 
 			update_button();
