@@ -10,28 +10,28 @@
             My Boards
         </h1>
     </div>
-    <div class="grid place-items-center grid-cols-1 sm:grid-cols-2  md:grid-cols-2 lg:grid-cols-3 gap-4 xl:grid-cols-4 justify-center" id="myboard_section"></div>
+    <div class="grid place-items-center grid-cols-1 sm:grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center" id="myboard_section"></div>
 </section>
 
 <!-- Define the template for an arbitrary board -->
 <template id="myboard_template">
-    <div class="w-full max-w-md py-4 px-8 bg-nav_grey shadow-lg rounded-lg my-20 flex flex-col justify-center">
+    <div class="w-full max-w-sm py-4 px-8 bg-nav_grey shadow-lg rounded-lg grid-flow-col justify-center h-48">
         <div>
             <h3 class="text-jade text-3xl font-semibold">Temp Board Name</h3>
-            <p class="mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
+            <p class="font-bold mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
         </div>
         <div class="flow-root mt-4">
-            <button class="float-left text-xl font-medium text-chardonnay hover:text-medium_aquamarine">Unsubscribe</button>
-            <a href="#" class="float-right text-xl font-medium text-chardonnay hover:text-medium_aquamarine">View &#8594;</a>
+            <button class="mt-12 float-left text-xl font-medium text-chardonnay hover:text-medium_aquamarine">Unsubscribe</button>
+            <a href="#" class="mt-12 float-right text-xl font-medium text-chardonnay hover:text-medium_aquamarine">View &#8594;</a>
         </div>
         </div>
 </template>
 
 <!-- Define the template for having no boards -->
 <template id="myboard_noboards">
-    <div class="w-full max-w-md bg-nav_grey rounded-lg justify-center">
+    <div class="w-full max-w-md rounded-lg justify-center">
         <p>
-            You are not subscribed to any boards! <a href="findboard.html">Find a Board</a> to subscribe to!
+            You are not subscribed to any boards! <a href="findboard.html" class="text-medium_aquamarine hover:text-chardonnay">Find a Board</a> to subscribe to!
         </p>
     </div>
 </template>

@@ -6,7 +6,7 @@
 <!-- Posts should have subject, creator's username, creation date, upvotes percentage, and button to vote on it, and button to view it-->
 
 <!-- Define the general layout -->
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-4 py-12" id="board-content" hidden>
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-4 py-12" id="board-content">
     <div class="text-center pb-12 pt-2 relative">
         <h1 class="font-bold text-3xl md:text-4xl lg:text-5xl font-heading" id="board_name_header">
 
@@ -26,16 +26,18 @@
 
         </div>
     </div>
-    <div class="grid place-items-center justify-center" id="boardpost_section"></div>
+    <div class="grid place-items-center justify-center grid-cols-1 gap-4" id="boardpost_section"></div>
 </section>
 
 <!-- Define the template for an arbitrary board -->
 <template id="boardpost_template">
-    <div class="w-full py-4 px-8 bg-nav_grey shadow-lg rounded-lg my-20 flex flex-col justify-center">
+    <div class="w-full py-4 px-8 bg-nav_grey shadow-lg rounded-lg flex flex-col justify-center">
         <div>
             <h3 class="text-jade text-3xl font-semibold">Post Subject</h3>
+            <h5 id="username" class="text-madang">xXx_MLG_G4MR_xXx</h5> <!--TODO: Update with actual username-->
             <h5 id="upvote_percentage"></h5>
-            <p class="mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
+            <h5 id="creation_date">04/20/2069</h5> <!--TODO: Update with actual post date-->
+            <p hidden class="mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
         </div>
         <div class="flow-root mt-4">
             <a href="#" class="float-right text-xl font-medium text-chardonnay hover:text-medium_aquamarine">View Post &#8594;</a>
@@ -46,7 +48,7 @@
 <!-- Define the template for having no boards -->
 <template id="boardpost_noposts">
     <div class="w-full max-w-md rounded-lg justify-center">
-        <p class="font-bold text-red-600">
+        <p class="font-bold text-red-600 text-center">
             No posts found.
         </p>
     </div>

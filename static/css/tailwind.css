@@ -607,6 +607,11 @@ video {
   margin-right: auto;
 }
 
+.my-16 {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+}
+
 .my-20 {
   margin-top: 5rem;
   margin-bottom: 5rem;
@@ -626,6 +631,10 @@ video {
 
 .mt-10 {
   margin-top: 2.5rem;
+}
+
+.mt-12 {
+  margin-top: 3rem;
 }
 
 .-mt-32 {
@@ -708,6 +717,10 @@ video {
   height: 6rem;
 }
 
+.h-48 {
+  height: 12rem;
+}
+
 .h-screen {
   height: 100vh;
 }
@@ -742,6 +755,10 @@ video {
 
 .w-full {
   width: 100%;
+}
+
+.max-w-sm {
+  max-width: 24rem;
 }
 
 .max-w-md {
@@ -863,6 +880,10 @@ video {
 
 .resize {
   resize: both;
+}
+
+.grid-flow-col {
+  grid-auto-flow: column;
 }
 
 .grid-cols-1 {
@@ -1444,6 +1465,10 @@ video {
 
   .sm\:hidden {
     display: none;
+  }
+
+  .sm\:grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 
   .sm\:grid-cols-2 {
