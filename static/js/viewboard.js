@@ -28,11 +28,12 @@ $(document).ready(function () {
                             let post_id = post["_id"]["$oid"];
 
                             let clone = template.content.cloneNode(true);
-                            let title = clone.querySelector("h3");
+                            let title = clone.querySelector("#post_title");
                             title.innerHTML = post["post_subject"];
-                            let desc = clone.querySelector("p");
-                            desc.innerHTML = post["post_description"];
-                            let link = clone.querySelector("a");
+                            let post_date = new Date(post["post_date"]["$date"]); // Assume server time uses UTC
+                            let dt = clone.querySelector("#creation_date");
+                            dt.innerHTML = post_date.toLocaleDateString("en-us") + " " + post_date.toLocaleTimeString("en-us");
+                            let link = clone.querySelector("#post_link");
                             link.href = "/viewpost.html?board=" + board_id + "&post=" + post_id;
                             let upp = clone.querySelector("#upvote_percentage");
                             if (post["post_upvotes"] < 0) {

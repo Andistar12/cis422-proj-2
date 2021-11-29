@@ -33,14 +33,13 @@
 <template id="boardpost_template">
     <div class="w-full py-4 px-8 bg-nav_grey shadow-lg rounded-lg flex flex-col justify-center">
         <div>
-            <h3 class="text-jade text-3xl font-semibold">Post Subject</h3>
-            <h5 id="username" class="text-madang">xXx_MLG_G4MR_xXx</h5> <!--TODO: Update with actual username-->
+            <h3 id="post_title" class="text-jade text-3xl font-semibold">Post Subject</h3>
             <h5 id="upvote_percentage"></h5>
-            <h5 id="creation_date">04/20/2069</h5> <!--TODO: Update with actual post date-->
+            <h5 id="creation_date">04/20/2069</h5>
             <p hidden class="mt-2">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!</p>
         </div>
         <div class="flow-root mt-4">
-            <a href="#" class="float-right text-xl font-medium text-chardonnay hover:text-medium_aquamarine">View Post &#8594;</a>
+            <a id="post_link" href="#" class="float-right text-xl font-medium text-chardonnay hover:text-medium_aquamarine">View Post &#8594;</a>
         </div>
     </div>
 </template>
