@@ -147,7 +147,7 @@
         <script type=text/javascript>
             // Setup global variables
             $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-            new BroadcastChannel("swbc").postMessage({"key": {{ username|tojson|safe }} });
+            $USERNAME = {{ username|tojson|safe }};
 
             // Setup mobile hamburger menu
             const btn = document.querySelector("#button-mobile-menu");

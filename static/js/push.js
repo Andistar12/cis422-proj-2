@@ -26,39 +26,47 @@ let sw_reg = null;
 function update_button() {
     // Updates the push button to either enable or disable notifications
 
-	let push_button = document.getElementById("push-button");
+	let push_button = document.getElementById("push-button")
 	let push_button_mobile = document.getElementById("push-button-mobile");
 
 	if (sw_reg == null) {
 		// Push notifications not available
-		push_button.textContent = 'Notifications Not Supported';
-		push_button.disabled = true;
-        push_button_mobile.textContent = 'Notifications Not Supported';
-		push_button_mobile.disabled = true;
+		if (push_button) {
+            push_button.textContent = 'Notifications Not Supported';
+            push_button.disabled = true;
+        }
+        if (push_button_mobile) {
+            push_button_mobile.textContent = 'Notifications Not Supported';
+            push_button_mobile.disabled = true;
+        }
 		return;
 	}
 
 	if (Notification.permission === 'denied') {
         // User rejected request
-		push_button.textContent = 'Notifications Blocked';
-		push_button.disabled = true;
-		push_button_mobile.textContent = 'Notifications Blocked';
-		push_button_mobile.disabled = true;
+        if (push_button) {
+            push_button.textContent = 'Notifications Blocked';
+            push_button.disabled = true;
+        }
+        if (push_button_mobile) {
+            push_button_mobile.textContent = 'Notifications Blocked';
+            push_button_mobile.disabled = true;
+        }
 		return;
 	}
 
 	if (is_subscribed) {
 		// Not yet subscribed
-		push_button.textContent = 'Disable Notifications';
-		push_button_mobile.textContent = 'Disable Notifications';
+		if (push_button) push_button.textContent = 'Disable Notifications';
+		if (push_button_mobile) push_button_mobile.textContent = 'Disable Notifications';
 	} else {
 		// Subscribed
-		push_button.textContent = 'Enable Notifications';
-		push_button_mobile.textContent = 'Enable Notifications';
+		if (push_button) push_button.textContent = 'Enable Notifications';
+		if (push_button_mobile) push_button_mobile.textContent = 'Enable Notifications';
 	}
 
-	push_button.disabled = false;
-	push_button_mobile.disabled = false;
+	if (push_button) push_button.disabled = false;
+	if (push_button_mobile) push_button_mobile.disabled = false;
 }
 
 
@@ -189,6 +197,9 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 				// Save service worker registration and init the ui
 				sw_reg = swReg;
 				init_push();
+
+                // Store current username
+                sw_reg.active.postMessage(JSON.stringify({key: $USERNAME}));
 		}).catch(function(error) {
 			console.error('Service Worker Error', error);
 		});

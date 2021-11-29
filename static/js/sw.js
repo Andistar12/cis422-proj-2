@@ -69,8 +69,12 @@ self.addEventListener('fetch', event => {
   }
 });
 
-const swBroadcastChannel = new BroadcastChannel("swbc");
-swBroadcastChannel.onmessage = function(event) {
+// Handle storing the username
+self.addEventListener('message', function(event){
+
+    // Parse data
+    var data = JSON.parse(event.data);
+
     // Setup database
     let db_req = indexedDB.open(USERNAME_CACHE, 1);
     db_req.onupgradeneeded = function(event) {
@@ -83,9 +87,9 @@ swBroadcastChannel.onmessage = function(event) {
         let db = event2.target.result;
         let transaction = db.transaction([USERNAME_CACHE], "readwrite");
         let objstore = transaction.objectStore(USERNAME_CACHE);
-        objstore.put(event.data.key, "username"); // Fail silently
+        objstore.put(data.key, "username"); // Fail silently
     }
-}
+});
 
 // Setup the service worker to receive push notifications
 self.addEventListener('push', function(event) {
