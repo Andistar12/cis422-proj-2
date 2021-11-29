@@ -140,8 +140,7 @@ self.addEventListener('push', function(event) {
 
             const options = {
                 body: msg,
-                icon: '/images/svg-seeklogo.com.svg',
-                badge: '/images/svg-seeklogo.com.svg',
+                badge: '/static/images/tac_logo_icon.png',
                 data: {
                     url: url
                 }
