@@ -91,50 +91,67 @@ self.addEventListener('message', function(event){
     }
 });
 
+// Returns a promise to get the username
+function get_username() {
+    return new Promise((resolve, reject) => {
+
+        // Open DB
+        let db_req = indexedDB.open(USERNAME_CACHE, 1);
+        db_req.onupgradeneeded = function(event) {
+            var db = event.target.result;
+            db.createObjectStore(USERNAME_CACHE);
+        };
+
+        // On open, add username to "username" key of USERNAME_CACHE object store of db
+        db_req.onsuccess = function(event2) {
+            let db = event2.target.result;
+            let transaction = db.transaction([USERNAME_CACHE], "readonly");
+            let objstore = transaction.objectStore(USERNAME_CACHE);
+            let req = objstore.get("username");
+
+            req.onsuccess = function(event3) {
+                resolve(req.result);
+            }
+            req.onerror = function(event) {
+                reject(`error processing transaction ${event.target.errorCode}`);
+            }
+        }
+        db_req.onerror = function(event) {
+            reject(`error opening database ${event.target.errorCode}`);
+        }
+    });
+}
+
 // Setup the service worker to receive push notifications
 self.addEventListener('push', function(event) {
     let data = JSON.parse(event.data.text());
 
-    // Open DB
-    let db_req = indexedDB.open(USERNAME_CACHE, 1);
-    db_req.onupgradeneeded = function(event) {
-        var db = event.target.result;
-        db.createObjectStore(USERNAME_CACHE);
-    };
+    event.waitUntil(get_username().then(function(cached_username) {
+        // Check username match against notification
+        if (data["username"] === cached_username) {
+            // This is actually for us
+            const title = data["board_name"];
+            let msg = data["message"];
 
-    // On open, add username to "username" key of USERNAME_CACHE object store of db
-    db_req.onsuccess = function(event2) {
-        let db = event2.target.result;
-        let transaction = db.transaction([USERNAME_CACHE], "readonly");
-        let objstore = transaction.objectStore(USERNAME_CACHE);
-        let req = objstore.get("username");
-        req.onsuccess = function(event3) {
-            let cached_username = req.result;
+            // Construct destination URL
+            let board_id = data["board_id"]["$oid"];
+            let post_id = data["post_id"]["$oid"];
+            let url = "/viewpost.html?board=" + board_id + "&post=" + post_id;
 
-            // Check username match against notification
-            if (data["username"] === cached_username) {
-                // This is actually for us
-                const title = data["board_name"];
-                let msg = data["message"];
+            const options = {
+                body: msg,
+                icon: '/images/svg-seeklogo.com.svg',
+                badge: '/images/svg-seeklogo.com.svg',
+                data: {
+                    url: url
+                }
+            };
 
-                // Construct destination URL
-                let board_id = data["board_id"]["$oid"];
-                let post_id = data["post_id"]["$oid"];
-                let url = "/viewpost.html?board=" + board_id + "&post=" + post_id;
-
-                const options = {
-                    body: msg,
-                    icon: '/images/svg-seeklogo.com.svg',
-                    badge: '/images/svg-seeklogo.com.svg',
-                    data: {
-                        url: url
-                    }
-                };
-
-                event.waitUntil(self.registration.showNotification(title, options));
-            }
-        };
-    }
+            return self.registration.showNotification(title, options);
+        } else {
+            return new Promise();
+        }
+    }));
 });
 
 // Handle the user interacting with the notification
