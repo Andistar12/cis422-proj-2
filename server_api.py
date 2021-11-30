@@ -19,7 +19,7 @@ blueprint = flask.Blueprint("api_blueprint", __name__)
 # API endpoints
 
 def err(msg, status=400):
-    return {'error': msg}, status
+    return {'error': str(msg)}, status
 
 @blueprint.route("/api/boards")
 def api_boards():
@@ -288,9 +288,10 @@ def api_board_add():
         return err('Board vote threshold must be an integer, 0 < n <= 100')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
-    val = db.create_board(None, username, name, desc, threshold)
-    if val is None:
-        return err('Could not create board', 404)
+    try:
+        val = db.create_board(None, username, name, desc, threshold)
+    except ValueError as e:
+        return err(e)
     ret = {'board_id': str(val)}
     return flask.jsonify(ret)
 
