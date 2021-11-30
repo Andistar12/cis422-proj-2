@@ -22,7 +22,7 @@ $(document).ready(function () {
                     document.getElementById("post-subject").innerHTML = post_data["post_subject"];
                     document.getElementById("post-username").innerHTML = post_data["post_username"];
                     document.getElementById("post-description").innerHTML = post_data["post_description"];
-                    let post_date = new Date(post_data["post_date"] + " UTC"); // Specify server time uses UTC
+                    let post_date = new Date(post_data["post_date"]["$date"]); // Assume server time uses UTC
                     document.getElementById("post-date").innerHTML = post_date.toLocaleDateString("en-us") + " " + post_date.toLocaleTimeString("en-us");
 
                     // Update board-related UI

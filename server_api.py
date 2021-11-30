@@ -451,13 +451,13 @@ def api_post():
         'post_subject': obj['post_subject'],
         'post_description': obj['post_description'],
         "post_username": owner_username,
-        "post_date": str(obj['post_date']),
+        "post_date": obj['post_date'],
         "post_upvotes": obj['post_upvotes'],
         "post_comments": comments,
         "post_notified": obj['post_notified'],
         "upvoted": upvoted
     }
-    return flask.jsonify(post)
+    return json_util.dumps(post)
 
 @blueprint.route("/api/post/create", methods=["POST"])
 def api_post_create():
