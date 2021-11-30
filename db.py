@@ -414,13 +414,13 @@ class AppDB:
          - vote_threshold: the vote threshold for the board
         Returns:
          - The unique ID Object of the new board, or None if an error occurs
-        Error: return None
+        Error: raise a ValueError with an appropriate message
         """
         board=self.db.boards
         user=self.db.users
 
         if board.find_one({"board_name":boardname.lower()})!=None:
-            return None
+            raise ValueError('Board already exists')
 
         if ownerid==None:
             filter={"username":owner}
@@ -443,7 +443,7 @@ class AppDB:
             user.update_one(filter, {"$push": {"boards_owned":board_id}})
             return board_id
         else:
-            return None
+            raise ValueError('Could not find owner')
 
     def delete_board(self, operator_id: ObjectId, operator: str, boardid: ObjectId):
         """

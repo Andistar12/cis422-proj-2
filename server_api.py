@@ -8,6 +8,8 @@ import db_connect
 import server_auth
 import server_notifs
 import bson
+import pymongo
+import re
 from bson import json_util
 from bson.objectid import ObjectId
 
@@ -17,7 +19,7 @@ blueprint = flask.Blueprint("api_blueprint", __name__)
 # API endpoints
 
 def err(msg, status=400):
-    return {'error': msg}, status
+    return {'error': str(msg)}, status
 
 @blueprint.route("/api/boards")
 def api_boards():
@@ -57,7 +59,10 @@ def api_boards():
             return err('offset must be a positive integer')
     except KeyError:
         return err('Must provide search term and offset')
-    boards = db.fetch_boards(search, offset, False) #query database with keyword
+    try:
+        boards = db.fetch_boards(search, offset, False) #query database with keyword
+    except (pymongo.errors.OperationFailure, re.error):
+        return err('Invalid search given')
     return json_util.dumps(boards) # Return a JSON (using BSON decoder) of the boards
 
 
@@ -283,9 +288,10 @@ def api_board_add():
         return err('Board vote threshold must be an integer, 0 < n <= 100')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
-    val = db.create_board(None, username, name, desc, threshold)
-    if val is None:
-        return err('Could not create board', 404)
+    try:
+        val = db.create_board(None, username, name, desc, threshold)
+    except ValueError as e:
+        return err(e)
     ret = {'board_id': str(val)}
     return flask.jsonify(ret)
 
