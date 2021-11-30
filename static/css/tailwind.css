@@ -1291,6 +1291,10 @@ video {
   line-height: 1;
 }
 
+.leading-loose {
+  line-height: 2;
+}
+
 .text-black {
   --tw-text-opacity: 1;
   color: rgba(0, 0, 0, var(--tw-text-opacity));
