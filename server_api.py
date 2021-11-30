@@ -49,7 +49,12 @@ def api_boards():
     data = flask.request.args #fetch the arguments from the GET request
     try:
         search = data['search'] #extract the search term and offset from the request
-        offset = int(data['offset'])
+        try:
+            offset = int(data['offset'])
+        except ValueError:
+            return err('offset must be a positive integer')
+        if offset < 0:
+            return err('offset must be a positive integer')
     except KeyError:
         return err('Must provide search term and offset')
     boards = db.fetch_boards(search, offset, False) #query database with keyword
@@ -136,7 +141,10 @@ def api_admins_add():
     """
     if server_auth.is_admin():
         db = db_connect.get_db()
-        username = flask.request.form['username']
+        try:
+            username = flask.request.form['username']
+        except KeyError:
+            return err('Must provide a username')
         ret = db.add_admin(None, username)
         if ret is None:
             return err('Could not find user %s' % username, 404)
@@ -160,7 +168,10 @@ def api_admins_remove():
     """
     if server_auth.is_admin():
         db = db_connect.get_db()
-        username = flask.request.form['username']
+        try:
+            username = flask.request.form['username']
+        except KeyError:
+            return err('Must provide a username')
         ret = db.remove_admin(None, username)
         if ret is None:
             return err('Could not find user %s' % username, 404)
@@ -203,7 +214,12 @@ def api_board():
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
     db = db_connect.get_db()
-    board_id = ObjectId(flask.request.args["board_id"])
+    try:
+        board_id = ObjectId(flask.request.args["board_id"])
+    except KeyError:
+        return err('Must provide a board id')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     obj = db.fetch_board(board_id)
     if not obj:
         return err('Could not find board %s' % board_id, 404)
@@ -288,7 +304,12 @@ def api_board_subscribe():
     if not server_auth.is_authenticated():
         return err('Must be logged in to subscribe to board', 403)
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
+    try:
+        board_id = ObjectId(form['board_id'])
+    except KeyError:
+        return err('Must provide a board id')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.subscribe_board(None, username, board_id)
@@ -311,7 +332,12 @@ def api_board_unsubscribe():
     if not server_auth.is_authenticated():
         return err('Must be logged in to unsubscribe from board', 403)
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
+    try:
+        board_id = ObjectId(form['board_id'])
+    except KeyError:
+        return err('Must provide a board id')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.unsubscribe_board(None, username, board_id)
@@ -399,8 +425,13 @@ def api_post():
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
     args = flask.request.args
-    board_id = ObjectId(args['board_id'])
-    post_id = ObjectId(args['post_id'])
+    try:
+        board_id = ObjectId(args['board_id'])
+        post_id = ObjectId(args['post_id'])
+    except KeyError:
+        return err('Must provide a board id and post id')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     db = db_connect.get_db()
     obj = db.fetch_post(board_id, post_id)
     if not obj:
@@ -461,6 +492,8 @@ def api_post_create():
         description = form['post_description']
     except KeyError:
         return err('Missing required arguments to create post')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     if not subject or not isinstance(subject, str) or len(subject) > 100:
         return err('Subject must be a string with 1-100 characters', 403)
     if not description or not isinstance(description, str) or len(description) > 1000:
@@ -542,8 +575,13 @@ def api_post_upvote():
     if not server_auth.is_authenticated():
         return err('Must be logged in to upvote a post', 403)
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
-    post_id = ObjectId(form['post_id'])
+    try:
+        board_id = ObjectId(form['board_id'])
+        post_id = ObjectId(form['post_id'])
+    except KeyError:
+        return err('Must provide board and post ids')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.upvote_post(None, username, board_id, post_id)
@@ -581,8 +619,13 @@ def api_post_cancel_vote():
     if not server_auth.is_authenticated():
         return err('Must be logged in to cancel a vote', 403)
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
-    post_id = ObjectId(form['post_id'])
+    try:
+        board_id = ObjectId(form['board_id'])
+        post_id = ObjectId(form['post_id'])
+    except KeyError:
+        return err('Must provide board and post ids')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.unupvote_post(None, username, board_id, post_id)
@@ -612,9 +655,14 @@ def api_comment_create():
     if not server_auth.is_authenticated():
         return err('Must be logged in to post a comment', 403)
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
-    post_id = ObjectId(form['post_id'])
-    message = form['message']
+    try:
+        board_id = ObjectId(form['board_id'])
+        post_id = ObjectId(form['post_id'])
+        message = form['message']
+    except KeyError:
+        return err('Must provide board id, post id, and message')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.add_comment(None, username, board_id, post_id, message)
@@ -640,8 +688,13 @@ def api_comment_upvote():
     if not server_auth.is_authenticated():
         return err('Must be logged in to upvote a comment', 403)
     form = flask.request.form
-    post_id = ObjectId(form['post_id'])
-    comment_id = ObjectId(form['comment_id'])
+    try:
+        post_id = ObjectId(form['post_id'])
+        comment_id = ObjectId(form['comment_id'])
+    except KeyError:
+        return err('Must provide post and comment ids')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.upvote_comment(None, username, post_id, comment_id)
@@ -667,8 +720,13 @@ def api_comment_delete():
     if not server_auth.is_authenticated():
         return err('Must be logged in to delete a comment', 403)
     form = flask.request.form
-    post_id = ObjectId(form['post_id'])
-    comment_id = ObjectId(form['comment_id'])
+    try:
+        post_id = ObjectId(form['post_id'])
+        comment_id = ObjectId(form['comment_id'])
+    except KeyError:
+        return err('Must provide post and comment ids')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.delete_comment(None, username, post_id, comment_id)
