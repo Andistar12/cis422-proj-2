@@ -77,7 +77,7 @@ $(document).ready(function () {
         // Define error function
         let error = function(err) {
             console.log(get_error(err));
-            display_error("An error occurred fetching boards. Reload the page?");
+            display_error("An error occurred fetching boards: " + get_error(err));
         };
 
         function do_search() {
@@ -94,6 +94,13 @@ $(document).ready(function () {
         document.getElementById("submit-board-search").addEventListener("click", function () {
             offset = 0;
             do_search();
+        });
+
+        document.getElementById("board-search-query").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                offset = 0;
+                do_search();
+            }
         });
 
         // Do board fetch
