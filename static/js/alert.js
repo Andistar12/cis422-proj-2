@@ -12,6 +12,7 @@ function display_error(message) {
 
     // Add to layout
     sec.appendChild(clone);
+    document.documentElement.scrollTop = 0;
 }
 
 function display_warning(message) {
