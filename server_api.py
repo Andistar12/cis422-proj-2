@@ -16,6 +16,9 @@ blueprint = flask.Blueprint("api_blueprint", __name__)
 
 # API endpoints
 
+def err(msg, status=400):
+    return {'error': msg}, status
+
 @blueprint.route("/api/boards")
 def api_boards():
     """
@@ -44,8 +47,11 @@ def api_boards():
 
     db = db_connect.get_db() #fetch the db object
     data = flask.request.args #fetch the arguments from the GET request
-    search = data['search'] #extract the search term and offset from the request
-    offset = int(data['offset'])
+    try:
+        search = data['search'] #extract the search term and offset from the request
+        offset = int(data['offset'])
+    except KeyError:
+        return {'error': 'Must provide search term and offset'}, 400
     boards = db.fetch_boards(search, offset, False) #query database with keyword
     return json_util.dumps(boards) # Return a JSON (using BSON decoder) of the boards
 
@@ -331,7 +337,12 @@ def api_board_delete():
     if not server_auth.is_admin():
         return {'error': 'Must be an admin to delete a board'}, 403
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
+    try:
+        board_id = ObjectId(form['board_id'])
+    except KeyError:
+        return err('Must provide a board id')
+    except bson.errors.InvalidId:
+        return err('Given id is not well-formed')
     db = db_connect.get_db()
     username = server_auth.get_curr_username()
     ret = db.delete_board(None, username, board_id)
@@ -481,8 +492,13 @@ def api_post_delete():
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     form = flask.request.form
-    board_id = ObjectId(form['board_id'])
-    post_id = ObjectId(form['post_id'])
+    try:
+        board_id = ObjectId(form['board_id'])
+        post_id = ObjectId(form['post_id'])
+    except KeyError:
+        return {'error': 'Must provide board and post ids'}, 400
+    except bson.errors.InvalidId:
+        return {'error': 'Given id is not well-formed'}, 400
     ret = db.delete_post(None, username, board_id, post_id)
     if ret is None:
         return {'error': 'Could not delete post'}, 404
