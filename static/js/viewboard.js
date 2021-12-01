@@ -53,7 +53,8 @@ $(document).ready(function () {
                 // Setup board information
                 document.getElementById("board_name_header").innerHTML = data["board_name"];
                 document.getElementById("board_desc_header").innerHTML = data["board_description"];
-                document.getElementById("board_vote_threshold").innerHTML = data["board_vote_threshold"] + "% upvote threshold";
+                let vote = document.getElementById("board_vote_threshold");
+                vote.innerHTML = data["board_vote_threshold"] + "% upvote threshold | " + data["board_member_count"] + " members";
 
                 // Global variables
                 board_members = data["board_member_count"];
