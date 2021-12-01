@@ -14,16 +14,21 @@
         <h2 id="board_desc_header" class="text-medium_aquamarine font-semibold font-heading">
 
         </h2>
-        <h5 id="board_vote_threshold">
+        <h5 id="board_vote_threshold" class="text-chardonnay">
 
         </h5>
         <div>
             <input type="checkbox" checked id="show-notified" name="show-notified" value="Show notified posts">
             <label for="show-notified">Show notified posts</label>
             <input type="checkbox" checked id="show-unnotified" name="show-unnotified" value="Show un-notified posts">
-            <label for="show-unnotified">Show unnotified posts</label> |
-            <button type="submit" id="create-new-post" class="font-bold text-chardonnay hover:text-medium_aquamarine">Create New Post</button>
+            <label for="show-unnotified">Show unnotified posts</label>
 
+        </div>
+        <div>
+
+                <button id="create-new-post" class="transition duration-420 ease-in-out mt-4 p-2 rounded-lg bg-jade hover:bg-chardonnay outline-none text-white shadow justify-center focus:bg-chardonnay cursor-pointer">
+                    Create New Post
+                </button>
         </div>
     </div>
     <div class="grid place-items-center justify-center grid-cols-1 gap-4" id="boardpost_section"></div>
