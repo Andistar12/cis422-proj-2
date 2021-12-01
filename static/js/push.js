@@ -139,10 +139,18 @@ function unsubscribe_user() {
 
 // Toggles whether the user has notifications on or off
 function toggle_notifs() {
-    if (is_subscribed) {
-        unsubscribe_user();
+    if ('PushManager' in window) {
+        // Web push feature is available, proceed
+        if (is_subscribed) {
+            unsubscribe_user();
+        } else {
+            subscribe_user();
+        }
     } else {
-        subscribe_user();
+        // Push feature not available
+        sw_reg = null;
+        display_error("Your browser does not support Push Notifications. Please try a different browser or platform.");
+        update_button();
     }
 }
 
