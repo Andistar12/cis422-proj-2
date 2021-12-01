@@ -150,7 +150,10 @@ def api_admins_add():
             username = flask.request.form['username']
         except KeyError:
             return err('Must provide a username')
-        ret = db.add_admin(None, username)
+        try:
+            ret = db.add_admin(None, username)
+        except ValueError as e:
+            return err(e)
         if ret is None:
             return err('Could not find user %s' % username, 404)
         else:
