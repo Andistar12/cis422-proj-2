@@ -8,12 +8,12 @@
     "theme_color": "#01A66F",
     "icons": [
       {
-        "src": "/static/images/tac_logo_small.jpg",
+        "src": "/static/tac_logo_small.png",
         "sizes": "200x200",
         "type": "image/jpg"
       },
       {
-        "src": "/static/images/tac_logo_large.png",
+        "src": "/static/tac_logo_large.png",
         "sizes": "834x834",
         "type": "image/png"
       }
