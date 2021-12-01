@@ -154,16 +154,20 @@ function toggle_notifs() {
     }
 }
 
-function init_push() {
-	// Initiates the push button and fetches the application service ID
-
+function init_buttons() {
+    // Setups the push buttons
 	let push_button = document.getElementById("push-button");
 	let push_button_mobile = document.getElementById("push-button-mobile");
-	if (push_button === null) return;
 
 	// Setup push button listener
-	push_button.addEventListener('click', toggle_notifs);
-    push_button_mobile.addEventListener('click', toggle_notifs);
+	if (push_button) push_button.addEventListener('click', toggle_notifs);
+    if (push_button_mobile) push_button_mobile.addEventListener('click', toggle_notifs);
+}
+
+function init_push() {
+	// Refreshes the subscription and fetches the VAPID key
+    
+    init_buttons();
 
 	// Set the initial subscription value
 	sw_reg.pushManager.getSubscription()
@@ -190,7 +194,7 @@ function init_push() {
 }
 
 
-if ('serviceWorker' in navigator && 'PushManager' in window) {
+if ('serviceWorker' in navigator) {
 	// Setup service worker and push manager
 
 	window.addEventListener('load', function() {
@@ -207,6 +211,5 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 		});
 	});
 } else {
-	console.warn('Push is not supported');
-	update_button();
+    init_buttons();
 }
