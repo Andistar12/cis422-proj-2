@@ -302,6 +302,11 @@ class AppDB:
         val=user.find_one(filter)
         check=admin.find_one(filter)
 
+        if val is None:
+            raise ValueError('Could not find user %s' % user_name)
+        if check is not None:
+            raise ValueError('%s is already an admin' % user_name)
+
         if (val!=None) and (check==None):
             if val["admin"]!=1:
                 user.update_one({"userid": val["_id"]},{"$set":{"admin":1}})
