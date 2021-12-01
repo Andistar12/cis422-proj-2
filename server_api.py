@@ -279,7 +279,7 @@ def api_board_add():
     if not name or not isinstance(name, str) or len(name) > 25:
         return err('Board name must be a string with 1-25 characters')
     if not desc or not isinstance(desc, str) or len(desc) > 100:
-        return err('Board description must be a string with 1-25 characters')
+        return err('Board description must be a string with 1-100 characters')
     try:
         threshold = int(threshold)
     except ValueError:
