@@ -140,7 +140,7 @@ class AppDB:
         """
         user=self.db.users
 
-        if(user.find_one({"username":user_name.lower()})!=None):
+        if(user.find_one({"username":user_name})!=None):
             return None
         else:
             user.insert_one({"username":user_name,
@@ -203,7 +203,7 @@ class AppDB:
         else:
             filter={"_id":userid}
         val=user.find_one(filter)
-        check=user.find_one({"_id":new_username.lower()})
+        check=user.find_one({"_id":new_username})
         if val != None and check==None:
             user.update_one(filter,{"$set":{"username":new_username}})
             if val["admin"]==1:
@@ -419,7 +419,7 @@ class AppDB:
         board=self.db.boards
         user=self.db.users
 
-        if board.find_one({"board_name":boardname.lower()})!=None:
+        if board.find_one({"board_name":boardname})!=None:
             raise ValueError('Board already exists')
 
         if ownerid==None:
@@ -513,9 +513,8 @@ class AppDB:
             u_filter = {"_id": operator_id}
         else:
             u_filter = {"username": operator}
-        check=board.find_one({"board_name":new_boardname.lower()})
         theuser = user.find_one(u_filter)
-        if val != None and theuser != None and check==None:
+        if val != None and theuser != None:
 
             if (admin.find_one({"userid": theuser["_id"]}) != None) or (val["board_owner"]==theuser["_id"]):
                 board.update_one(filter,{"$set":{"board_name":new_boardname}})
