@@ -13,8 +13,10 @@ $(document).ready(function () {
             if (offset === 0) sec.innerHTML = "";
             if (data.length <= 0) {
                 // No boards
-                header.appendChild(document.querySelector("#findboard_noboards").content.cloneNode(true));
+                //header.appendChild(document.querySelector("#findboard_noboards").content.cloneNode(true));
+                $("#noboards_div").show()
             } else {
+                $("#noboards_div").hide()
                 data.forEach(function(board) {
 
                     let board_id = board["_id"]["$oid"];
