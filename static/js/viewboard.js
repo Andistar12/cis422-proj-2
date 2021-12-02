@@ -1,6 +1,7 @@
 $(document).ready(function () {
     if ('content' in document.createElement('template')) {
         let board_id = new URLSearchParams(window.location.search).get("board");
+        let subscribed = false;
 
         if (board_id === null) {
             display_error("An error occurred displaying boards. No board was found");
@@ -49,10 +50,49 @@ $(document).ready(function () {
                 }
             };
 
+            let btn = document.getElementById("subscribe");
+            let update_subscribe_btn = function() {
+                if (subscribed) btn.innerHTML = "Unsubscribe";
+                else btn.innerHTML = "Subscribe";
+            }
+
+            btn.addEventListener("click", function() {
+                btn.disabled = true;
+                if (subscribed) {
+                    // Attempt to unsubscribe
+                    let btn_success = function() {
+                        subscribed = false;
+                        update_subscribe_btn();
+                        btn.disabled = false;
+                    };
+                    let btn_error = function(err) {
+                        console.log(err);
+                        display_error("An error occurred unsubscribing. Reload the page?");
+                        btn.innerHTML = "Error";
+                    };
+                    unsubscribe_board(board_id, btn_success, btn_error);
+                } else {
+                    // Attempt to unsubscribe
+                    let btn_success = function() {
+                        subscribed = true;
+                        update_subscribe_btn();
+                        btn.disabled = false;
+                    };
+                    let btn_error = function(err) {
+                        console.log(err);
+                        display_error("An error occurred subscribing. Reload the page?");
+                        btn.innerHTML = "Error";
+                    };
+                    subscribe_board(board_id, btn_success, btn_error);
+                }
+            });
+
             let success = function(data) {
                 // Setup board information
                 document.getElementById("board_name_header").innerHTML = data["board_name"];
                 document.getElementById("board_desc_header").innerHTML = data["board_description"];
+                subscribed = data["subscribed"];
+                update_subscribe_btn();
                 let vote = document.getElementById("board_vote_threshold");
                 vote.innerHTML = data["board_vote_threshold"] + "% upvote threshold | " + data["board_member_count"] + " members";
 
