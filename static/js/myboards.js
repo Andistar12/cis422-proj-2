@@ -2,6 +2,7 @@ $(document).ready(function () {
     if ('content' in document.createElement('template')) {
 
         // Find parent section and template child to clone
+        let header = document.querySelector("#header_section");
         let sec = document.querySelector("#myboard_section");
         let template = document.querySelector("#myboard_template")
 
@@ -9,7 +10,7 @@ $(document).ready(function () {
         let success = function(data) {
             if (data.length <= 0) {
                 // No boards
-                sec.appendChild(document.querySelector("#myboard_noboards").content.cloneNode(true));
+                header.appendChild(document.querySelector("#myboard_noboards").content.cloneNode(true));
             } else {
                 data.forEach(function(board) {
                     let board_id = board["board_id"];

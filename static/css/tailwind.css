@@ -1202,6 +1202,10 @@ video {
   padding-top: 0.5rem;
 }
 
+.pt-4 {
+  padding-top: 1rem;
+}
+
 .pt-6 {
   padding-top: 1.5rem;
 }
@@ -1614,6 +1618,11 @@ video {
   .lg\:px-10 {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
+  }
+
+  .lg\:text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
   }
 
   .lg\:text-5xl {
