@@ -4,6 +4,7 @@ $(document).ready(function () {
         let offset = 0;
 
         // Find parent section and template child to clone
+        let header = document.querySelector("#findboard_header");
         let sec = document.querySelector("#findboard_section");
         let template = document.querySelector("#findboard_template");
 
@@ -12,7 +13,7 @@ $(document).ready(function () {
             if (offset === 0) sec.innerHTML = "";
             if (data.length <= 0) {
                 // No boards
-                sec.appendChild(document.querySelector("#findboard_noboards").content.cloneNode(true));
+                header.appendChild(document.querySelector("#findboard_noboards").content.cloneNode(true));
             } else {
                 data.forEach(function(board) {
 
