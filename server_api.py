@@ -18,6 +18,9 @@ blueprint = flask.Blueprint("api_blueprint", __name__)
 
 # API endpoints
 
+#convenience function for error messages and status codes
+#can accept an Exception object with a message
+#default status is 400 - bad request
 def err(msg, status=400):
     return {'error': str(msg)}, status
 
@@ -51,18 +54,18 @@ def api_boards():
     data = flask.request.args #fetch the arguments from the GET request
     try:
         search = data['search'] #extract the search term and offset from the request
-        try:
+        try: #attempt to extract the offset from the request
             offset = int(data['offset'])
-        except ValueError:
+        except ValueError: #catch badly-formed integer
             return err('offset must be a positive integer')
-        if offset < 0:
+        if offset < 0: #ensure offset is valid
             return err('offset must be a positive integer')
     except KeyError:
         return err('Must provide search term and offset')
-    try:
+    try: #attempt to query the database
         boards = db.fetch_boards(search, offset, False) #query database with keyword
     except (pymongo.errors.OperationFailure, re.error):
-        return err('Invalid search given')
+        return err('Invalid search given') #catch an error in the regex
     return json_util.dumps(boards) # Return a JSON (using BSON decoder) of the boards
 
 
@@ -87,24 +90,26 @@ def api_user_boards():
 
     On error, return a JSON with "error" set to the message
     """
-    if not server_auth.is_authenticated():
-        return flask.Response({"error": "Must be logged in to fetch boards"}, status=403)
+    if not server_auth.is_authenticated(): #ensure user is logged in
+        return err("Must be logged in to fetch boards", 403)
     db = db_connect.get_db()
-    username = server_auth.get_curr_username()
+    username = server_auth.get_curr_username() #fetch user's username
+    #fetch user from database, and fail if user is not found
     if username is None or not (user := db.fetch_user(None, username)):
-        return flask.Response({"error": "Could not find user"}, status=404)
+        return err('Could not find user', 404)
+    #retrieve ObjectIds from the fetched user
     board_ids = user['subscriptions']
-    boards = []
-    for i in board_ids:
-        obj = db.fetch_board(i)
-        board = {
+    boards = [] #return array
+    for i in board_ids: #iterate over boards user is subscribed to
+        obj = db.fetch_board(i) #fetch information about the board
+        board = { #construct a return value
             'board_id': str(obj['_id']),
             'board_name': obj['board_name'],
             'board_description': obj['board_description'],
             'board_date': str(obj['board_date']),
             'board_member_count': obj['board_member_count'],
             'board_vote_threshold': obj['board_vote_threshold'],
-            "subscribed": True
+            "subscribed": True #user is obviously subscribed
         }
         boards.append(board)
     return flask.jsonify(boards)
@@ -123,12 +128,12 @@ def api_admins():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    if server_auth.is_admin():
+    if server_auth.is_admin(): #ensure a non-admin cannot fetch admins
         db = db_connect.get_db()
-        admins = db.fetch_admins()
-        admins = [i['username'] for i in admins]
+        admins = db.fetch_admins() #query database for administrators
+        admins = [i['username'] for i in admins] #convert to usernames from ids
         return flask.jsonify(admins)
-    return Response({"error": "User must be an admin to request admins"}, status=403)
+    return err('User must be an admin to request admins', 403)
 
 @blueprint.route("/api/admins/add", methods=["POST"])
 def api_admins_add():
@@ -144,20 +149,23 @@ def api_admins_add():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    if server_auth.is_admin():
+    if server_auth.is_admin(): #ensure only admins can add admins
         db = db_connect.get_db()
-        try:
+        try: #attempt to retrieve username argument
             username = flask.request.form['username']
-        except KeyError:
+        except KeyError: #send error message to frontend
             return err('Must provide a username')
-        try:
+        try: #attempt to add the administrator
             ret = db.add_admin(None, username)
         except ValueError as e:
+            #if a ValueError was raised, either the user is already
+            #an admin or the user could not be found
+            #send the message to the frontent
             return err(e)
         if ret is None:
             return err('Could not find user %s' % username, 404)
         else:
-            return Response(status=200)
+            return Response(status=200) #success
     return err('User must be an admin to add an admin', 403)
 
 @blueprint.route("/api/admins/remove", methods=["POST"])
@@ -174,17 +182,17 @@ def api_admins_remove():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    if server_auth.is_admin():
+    if server_auth.is_admin(): #ensure only an admin can remove an admin
         db = db_connect.get_db()
-        try:
+        try: #attempt to retrieve the username from the request
             username = flask.request.form['username']
         except KeyError:
             return err('Must provide a username')
-        ret = db.remove_admin(None, username)
-        if ret is None:
-            return err('Could not find user %s' % username, 404)
+        ret = db.remove_admin(None, username) #attempt to remove admin
+        if ret is None: #if it failed, the given user is not an admin/not a user
+            return err('Could not find administrator %s' % username, 404)
         else:
-            return Response(status=200)
+            return Response(status=200) #success
     return err('User must be an admin to remove an admin', 403)
 
 @blueprint.route("/api/board")
@@ -222,23 +230,26 @@ def api_board():
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
     db = db_connect.get_db()
-    try:
+    try: #attempt to retrieve board_id and convert to ObjectId
         board_id = ObjectId(flask.request.args["board_id"])
-    except KeyError:
+    except KeyError: #board_id was not given
         return err('Must provide a board id')
-    except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
-    obj = db.fetch_board(board_id)
-    if not obj:
+    except bson.errors.InvalidId: #given id was not proper
+        return err('Given id is not valid')
+    obj = db.fetch_board(board_id) #query the db for the board
+    if not obj: #if board does not exist, return 404 error
         return err('Could not find board %s' % board_id, 404)
+    #if the user is logged in, check if user is subscribed to this board
     username = server_auth.get_curr_username()
     user = db.fetch_user(None, username)
-    if not user:
+    if not user: #if user is not logged in, they are not subscribed
         subscribed = False
     else:
         subs = user['subscriptions']
+        #subscriptions are stored as a list of board ids
         subscribed = board_id in subs
     posts = obj["board_posts"]
+    #construct an object to be sent to the frontend with board information
     board = {
         'board_id': str(obj['_id']),
         'board_name': obj['board_name'],
@@ -270,32 +281,36 @@ def api_board_add():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    if not server_auth.is_authenticated():
+    if not server_auth.is_authenticated(): #ensure user is logged in
         return err('Must be logged in to create board', 403)
     form = flask.request.form
-    try:
+    try: #attempt to extract arguments from request
         name = form['board_name']
         desc = form['board_description']
         threshold = form['board_vote_threshold']
-    except KeyError:
+    except KeyError: #KeyError means an argument was not found in the form
         return err('Missing required arguments to create board')
+    #validate board name - must be a string with 1-25 characters
     if not name or not isinstance(name, str) or len(name) > 25:
         return err('Board name must be a string with 1-25 characters')
+    #validate board description - must be a string with 1-100 characters
     if not desc or not isinstance(desc, str) or len(desc) > 100:
         return err('Board description must be a string with 1-100 characters')
-    try:
+    try: #validate board threshold - must be an integer, 0 < n <= 100
         threshold = int(threshold)
     except ValueError:
         return err('Board vote threshold must be an integer, 0 < n <= 100')
     if not threshold or not isinstance(threshold, int) or threshold < 1 or threshold > 100:
         return err('Board vote threshold must be an integer, 0 < n <= 100')
-    username = server_auth.get_curr_username()
+    username = server_auth.get_curr_username() #fetch the user who created the board
     db = db_connect.get_db()
-    try:
+    try: #attempt to create the board
         val = db.create_board(None, username, name, desc, threshold)
     except ValueError as e:
+        #if the attempt fails, either the board name already exists
+        #or the user could not be found
         return err(e)
-    ret = {'board_id': str(val)}
+    ret = {'board_id': str(val)} #construct the return object
     return flask.jsonify(ret)
 
 @blueprint.route("/api/board/subscribe", methods=["POST"])
@@ -310,21 +325,22 @@ def api_board_subscribe():
 
     On error, return a JSON with "error" set to the message
     """
-    if not server_auth.is_authenticated():
+    if not server_auth.is_authenticated(): #ensure user is logged in
         return err('Must be logged in to subscribe to board', 403)
     form = flask.request.form
-    try:
+    try: #attempt to retrieve board_id from request
         board_id = ObjectId(form['board_id'])
-    except KeyError:
+    except KeyError: #board_id was not provided
         return err('Must provide a board id')
-    except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+    except bson.errors.InvalidId: #board_id is not a valid ObjectId
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
+    #attempt to subscribe user to board
     ret = db.subscribe_board(None, username, board_id)
     if ret is None:
         return err('Could not subscribe to board', 404)
-    return Response(status=200)
+    return Response(status=200) #success
 
 @blueprint.route("/api/board/unsubscribe", methods=["POST"])
 def api_board_unsubscribe():
@@ -338,20 +354,22 @@ def api_board_unsubscribe():
 
     On error, return a JSON with "error" set to the message
     """
-    if not server_auth.is_authenticated():
+    if not server_auth.is_authenticated(): #ensure user is logged in
         return err('Must be logged in to unsubscribe from board', 403)
     form = flask.request.form
-    try:
+    try: #attempt to retrieve the board_id from the request
         board_id = ObjectId(form['board_id'])
-    except KeyError:
+    except KeyError: #fail if id was not provided
         return err('Must provide a board id')
-    except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+    except bson.errors.InvalidId: #fail if invalid id is provided
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
+    #attempt to unsubscribe from board
     ret = db.unsubscribe_board(None, username, board_id)
     if ret is None:
-        return err('Could not subscribe to board', 404)
+        #fail if db was unable to unsubscribe from board
+        return err('Could not unsubscribe from board', 404)
     return Response(status=200)
 
 
@@ -369,18 +387,19 @@ def api_board_delete():
 
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
-    if not server_auth.is_admin():
+    if not server_auth.is_admin(): #ensure only admins can delete boards
         return err('Must be an admin to delete a board', 403)
     form = flask.request.form
-    try:
+    try: #attempt to extract board_id
         board_id = ObjectId(form['board_id'])
     except KeyError:
         return err('Must provide a board id')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     db = db_connect.get_db()
     username = server_auth.get_curr_username()
     ret = db.delete_board(None, username, board_id)
+    #fail if db could not delete board
     if ret is None:
         return err('Could not delete board', 404)
     return Response(status=200)
@@ -434,19 +453,20 @@ def api_post():
     Returns 200 OK or a JSON with "error" set to an associated message.
     """
     args = flask.request.args
-    try:
+    try: #attempt to extract 
         board_id = ObjectId(args['board_id'])
         post_id = ObjectId(args['post_id'])
-    except KeyError:
+    except KeyError: #fail if arg wasnt provided
         return err('Must provide a board id and post id')
-    except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+    except bson.errors.InvalidId: #fail if arg is invalid
+        return err('Given id is not valid')
     db = db_connect.get_db()
     obj = db.fetch_post(board_id, post_id)
-    if not obj:
+    if not obj: #fail if post does not exist
         return err('Could not find post', 404)
     comments = db.fetch_comments(post_id)
     upvoted = False
+    #if user is logged in, determine whether user has upvoted post
     if server_auth.is_authenticated():
         username = server_auth.get_curr_username()
         user = db.fetch_user(None, username)
@@ -455,6 +475,7 @@ def api_post():
         upvoted = ObjectId(user_id) in upvotes
     owner = db.fetch_user(userid=obj['post_owner'], user_name=None)
     owner_username = owner['username']
+    #build post object from object returned by db
     post = {
         'post_id': str(obj['_id']),
         'post_subject': obj['post_subject'],
@@ -495,20 +516,21 @@ def api_post_create():
     db = db_connect.get_db()
     user = db.fetch_user(None, username)
     form = flask.request.form
-    try:
+    try: #attempt to retrieve arguments
         board_id = ObjectId(form['board_id'])
         subject = form['post_subject']
         description = form['post_description']
     except KeyError:
         return err('Missing required arguments to create post')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     if not subject or not isinstance(subject, str) or len(subject) > 100:
         return err('Subject must be a string with 1-100 characters', 403)
     if not description or not isinstance(description, str) or len(description) > 1000:
         return err('Description must be a string with 1-1000 characters', 403)
     if board_id not in user['subscriptions']:
         return err('Must be subscribed to post to board', 403)
+    #attempt to create post
     ret = db.create_post(None, username, board_id, subject, description)
     if not ret:
         return err('Could not create post', 404)
@@ -540,7 +562,7 @@ def api_post_delete():
     except KeyError:
         return err('Must provide board and post ids')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     ret = db.delete_post(None, username, board_id, post_id)
     if ret is None:
         return err('Could not delete post', 404)
@@ -590,7 +612,7 @@ def api_post_upvote():
     except KeyError:
         return err('Must provide board and post ids')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.upvote_post(None, username, board_id, post_id)
@@ -634,7 +656,7 @@ def api_post_cancel_vote():
     except KeyError:
         return err('Must provide board and post ids')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.unupvote_post(None, username, board_id, post_id)
@@ -671,7 +693,7 @@ def api_comment_create():
     except KeyError:
         return err('Must provide board id, post id, and message')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.add_comment(None, username, board_id, post_id, message)
@@ -703,7 +725,7 @@ def api_comment_upvote():
     except KeyError:
         return err('Must provide post and comment ids')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.upvote_comment(None, username, post_id, comment_id)
@@ -735,7 +757,7 @@ def api_comment_delete():
     except KeyError:
         return err('Must provide post and comment ids')
     except bson.errors.InvalidId:
-        return err('Given id is not well-formed')
+        return err('Given id is not valid')
     username = server_auth.get_curr_username()
     db = db_connect.get_db()
     ret = db.delete_comment(None, username, post_id, comment_id)
