@@ -113,6 +113,10 @@ $(document).ready(function () {
 
             // Setup UI elements
             document.getElementById("create-new-post").addEventListener("click", function () {
+                if (!subscribed) {
+                    display_error("You are not subscribed to this board. Subscribe to enable post creation");
+                    return;
+                }
                 window.location.href = $SCRIPT_ROOT + "/makepost.html?board=" + board_id;
             });
             document.getElementById("show-notified").addEventListener("click", display_posts);
