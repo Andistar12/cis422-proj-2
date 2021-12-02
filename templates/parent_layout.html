@@ -42,7 +42,7 @@
 
     </head>
     <body class="example">
-        <nav class="bg-jade shadow-2xl">
+        <nav class="bg-jade shadow-2xl fixed z-50 w-full">
 
             {% set active_page = active_page|default('index') -%}
 
@@ -153,6 +153,8 @@
 
             </div>
             </div>
+            <!-- Setup alerting -->
+            {% include "alerts.html" %}
         </nav>
 
         <script type=text/javascript>
@@ -169,10 +171,9 @@
                 menu.classList.toggle("hidden");
             });
         </script>
-
-        <!-- Setup alerting -->
-        {% include "alerts.html" %}
-
-        {% block content %}{% endblock %}
+        
+        <div class="z-0 pt-16">
+            {% block content %}{% endblock %}
+        </div>
     </body>
 </html>
