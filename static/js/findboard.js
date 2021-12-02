@@ -86,7 +86,7 @@ $(document).ready(function () {
             if (query === "") query = ".*";
             else {
                 // Construct regex using all search words
-                query = "\\b(" + query.split(" ").join("|") + ")\\b"
+                query = "(" + query.split(" ").join("|") + ")"
             }
 
             fetch_boards(query, offset, success, error);
